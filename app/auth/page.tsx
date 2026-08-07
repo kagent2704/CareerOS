@@ -16,7 +16,7 @@ export default function AuthPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function social(provider: "google" | "azure" | "apple") {
+  async function social(provider: "google" | "azure") {
     if (!isSupabaseConfigured()) return setMessage("Connect Supabase in Vercel before signing in.");
     setLoading(true);
     const supabase = createClient();
@@ -55,10 +55,9 @@ export default function AuthPage() {
         <p className="auth-eyebrow">{mode === "signin" ? "WELCOME BACK" : "START YOUR JOURNEY"}</p>
         <h2>{mode === "signin" ? "Sign in to CareerOS" : "Create your account"}</h2>
         <p className="auth-subtitle">{mode === "signin" ? "Your next opportunity is waiting." : "Build a job search system that works for you."}</p>
-        <div className="social-grid">
+        <div className="social-grid social-grid-two">
           <button onClick={() => social("google")} disabled={loading}><span className="google">G</span>Google</button>
           <button onClick={() => social("azure")} disabled={loading}><span className="microsoft"><i/><i/><i/><i/></span>Microsoft</button>
-          <button onClick={() => social("apple")} disabled={loading}><span className="apple">●</span>Apple</button>
         </div>
         <div className="divider"><span>or continue with email</span></div>
         <form onSubmit={submit}>
