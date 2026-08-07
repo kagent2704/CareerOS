@@ -850,7 +850,8 @@
   font-weight: 700;
   gap: 6px;
 }
-.modal input {
+.modal input,
+.modal select {
   border: 1px solid #ddd9cf;
   background: #fff;
   border-radius: 8px;

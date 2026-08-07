@@ -5,14 +5,36 @@ import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import "./dashboard.css";
 
-const applications = [
+type Application = {
+  id: string;
+  company: string;
+  initials: string;
+  color: string;
+  role: string;
+  location: string;
+  stage: string;
+  date: string;
+  match: number;
+};
+
+type ApplicationRow = {
+  id: string;
+  company: string;
+  role: string;
+  location: string;
+  stage: string;
+  match_score: number;
+  deadline: string | null;
+};
+
+const demoApplications: Omit<Application, "id">[] = [
   {
     company: "Razorpay",
     initials: "RZ",
     color: "#5b5bd6",
     role: "Backend Engineer",
     location: "Bengaluru · Hybrid",
-    stage: "Technical",
+    stage: "Interview",
     date: "Aug 12",
     match: 94,
   },
@@ -48,6 +70,32 @@ const applications = [
   },
 ];
 
+const companyColors = ["#5b5bd6", "#1769e0", "#7f38c7", "#151515", "#ef6a3a"];
+
+function formatApplication(row: ApplicationRow): Application {
+  const colorIndex =
+    [...row.company].reduce(
+      (total, character) => total + character.charCodeAt(0),
+      0,
+    ) % companyColors.length;
+  return {
+    id: row.id,
+    company: row.company,
+    initials: row.company.slice(0, 2).toUpperCase(),
+    color: companyColors[colorIndex],
+    role: row.role,
+    location: row.location,
+    stage: row.stage,
+    date: row.deadline
+      ? new Intl.DateTimeFormat("en", {
+          month: "short",
+          day: "numeric",
+        }).format(new Date(`${row.deadline}T00:00:00`))
+      : "No date",
+    match: row.match_score,
+  };
+}
+
 const nav = [
   "Overview",
   "Applications",
@@ -64,7 +112,10 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [toast, setToast] = useState("");
-  const [added, setAdded] = useState<typeof applications>([]);
+  const [storedApplications, setStoredApplications] = useState<Application[]>(
+    [],
+  );
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
   const [profile, setProfile] = useState({
     fullName: "CareerOS User",
     headline: "Building my next opportunity",
@@ -74,22 +125,51 @@ export default function Home() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
-    createClient()
-      .auth.getUser()
-      .then(({ data: { user } }) => {
-        if (!user) return;
-        setProfile({
-          fullName:
-            user.user_metadata.full_name ||
-            user.user_metadata.name ||
-            user.email?.split("@")[0] ||
-            "CareerOS User",
-          headline:
-            user.user_metadata.headline || "Building my next opportunity",
-          location: user.user_metadata.location || "",
-          email: user.email || "",
-        });
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      setProfile({
+        fullName:
+          user.user_metadata.full_name ||
+          user.user_metadata.name ||
+          user.email?.split("@")[0] ||
+          "CareerOS User",
+        headline: user.user_metadata.headline || "Building my next opportunity",
+        location: user.user_metadata.location || "",
+        email: user.email || "",
       });
+      let { data, error } = await supabase
+        .from("applications")
+        .select("id, company, role, location, stage, match_score, deadline")
+        .order("created_at", { ascending: false });
+      if (
+        !error &&
+        data?.length === 0 &&
+        user.email?.toLowerCase() === "kashmirasanjaypatil@gmail.com"
+      ) {
+        const seeded = await supabase
+          .from("applications")
+          .insert(
+            demoApplications.map((application) => ({
+              user_id: user.id,
+              company: application.company,
+              role: application.role,
+              location: application.location,
+              stage: application.stage,
+              match_score: application.match,
+              deadline: `2026-${application.date === "Aug 6" ? "08-06" : application.date === "Aug 9" ? "08-09" : application.date === "Aug 12" ? "08-12" : "08-15"}`,
+            })),
+          )
+          .select("id, company, role, location, stage, match_score, deadline");
+        data = seeded.data;
+        error = seeded.error;
+      }
+      if (error) {
+        setToast(`Could not load applications: ${error.message}`);
+        window.setTimeout(() => setToast(""), 4000);
+      } else setStoredApplications((data || []).map(formatApplication));
+      setApplicationsLoading(false);
+    });
   }, []);
 
   const firstName = profile.fullName.trim().split(/\s+/)[0] || "there";
@@ -103,31 +183,43 @@ export default function Home() {
       .toUpperCase() || "CU";
   const isDemoAccount =
     profile.email.toLowerCase() === "kashmirasanjaypatil@gmail.com";
-  const applicationCount = (isDemoAccount ? 24 : 0) + added.length;
-  const pipeline = isDemoAccount
-    ? [
-        { n: 9 + added.length, l: "Saved", c: "gray" },
-        { n: 8, l: "Applied", c: "blue" },
-        { n: 3, l: "OA", c: "purple" },
-        { n: 2, l: "Interview", c: "orange" },
-        { n: 1, l: "Offer", c: "green" },
-      ]
-    : [
-        { n: added.length, l: "Saved", c: "gray" },
-        { n: 0, l: "Applied", c: "blue" },
-        { n: 0, l: "OA", c: "purple" },
-        { n: 0, l: "Interview", c: "orange" },
-        { n: 0, l: "Offer", c: "green" },
-      ];
+  const applicationCount = storedApplications.length;
+  const pipeline = [
+    {
+      n: storedApplications.filter((item) => item.stage === "Saved").length,
+      l: "Saved",
+      c: "gray",
+    },
+    {
+      n: storedApplications.filter((item) => item.stage === "Applied").length,
+      l: "Applied",
+      c: "blue",
+    },
+    {
+      n: storedApplications.filter((item) => item.stage === "OA").length,
+      l: "OA",
+      c: "purple",
+    },
+    {
+      n: storedApplications.filter((item) => item.stage === "Interview").length,
+      l: "Interview",
+      c: "orange",
+    },
+    {
+      n: storedApplications.filter((item) => item.stage === "Offer").length,
+      l: "Offer",
+      c: "green",
+    },
+  ];
 
   const rows = useMemo(
     () =>
-      [...added, ...(isDemoAccount ? applications : [])].filter((item) =>
+      storedApplications.filter((item) =>
         `${item.company} ${item.role} ${item.location}`
           .toLowerCase()
           .includes(query.toLowerCase()),
       ),
-    [added, isDemoAccount, query],
+    [storedApplications, query],
   );
 
   function notify(message: string) {
@@ -135,25 +227,35 @@ export default function Home() {
     window.setTimeout(() => setToast(""), 2400);
   }
 
-  function addApplication(e: React.FormEvent<HTMLFormElement>) {
+  async function addApplication(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const company = String(data.get("company") || "New company");
-    setAdded((current) => [
-      {
-        company,
-        initials: company.slice(0, 2).toUpperCase(),
-        color: "#ef6a3a",
-        role: String(data.get("role") || "New role"),
-        location: "Pune · Hybrid",
-        stage: "Saved",
-        date: "Today",
-        match: 82,
-      },
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user)
+      return notify("Please sign in again before adding an application");
+    const { data: created, error } = await supabase
+      .from("applications")
+      .insert({
+        user_id: user.id,
+        company: String(data.get("company") || "").trim(),
+        role: String(data.get("role") || "").trim(),
+        location: String(data.get("location") || "").trim(),
+        stage: String(data.get("stage") || "Saved"),
+        deadline: String(data.get("deadline") || "") || null,
+      })
+      .select("id, company, role, location, stage, match_score, deadline")
+      .single();
+    if (error || !created)
+      return notify(error?.message || "Could not save application");
+    setStoredApplications((current) => [
+      formatApplication(created),
       ...current,
     ]);
     setShowModal(false);
-    notify("Application added to your pipeline");
+    notify("Application saved permanently");
   }
 
   async function signOut() {
@@ -458,9 +560,11 @@ export default function Home() {
                 <div>
                   <h2>Recent applications</h2>
                   <p>
-                    {query
-                      ? `${rows.length} matching results`
-                      : "Your latest activity"}
+                    {applicationsLoading
+                      ? "Loading your applications…"
+                      : query
+                        ? `${rows.length} matching results`
+                        : "Your latest activity"}
                   </p>
                 </div>
                 <button onClick={() => setActive("Applications")}>
@@ -614,6 +718,25 @@ export default function Home() {
                   placeholder="e.g. Software Engineer"
                   required
                 />
+              </label>
+              <label>
+                Location
+                <input name="location" placeholder="e.g. Bengaluru · Hybrid" />
+              </label>
+              <label>
+                Stage
+                <select name="stage" defaultValue="Saved">
+                  <option>Saved</option>
+                  <option>Applied</option>
+                  <option>OA</option>
+                  <option>Interview</option>
+                  <option>Offer</option>
+                  <option>Rejected</option>
+                </select>
+              </label>
+              <label>
+                Deadline
+                <input name="deadline" type="date" />
               </label>
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(false)}>

@@ -73,9 +73,7 @@ The **Overview** page summarizes your job search:
 2. Enter the company name and role.
 3. Select **Add to pipeline**.
 
-The application appears at the top of **Recent applications** for the current browser session.
-
-> Current limitation: newly added applications are session-only demo data and are cleared when the page is refreshed. Persistent application storage is planned for a future release.
+The application appears at the top of **Recent applications** and is saved to your account. Applications remain available after refreshing, signing out, or changing devices. Only you can access your records.
 
 ## 6. Search applications
 
@@ -149,6 +147,7 @@ Perform a hard refresh:
 - Google authentication occurs on Google’s official sign-in page.
 - Never publish passwords, authentication codes, or private credentials in GitHub issues.
 - Profile information is stored with the authenticated Supabase account.
+- Application records are stored in the hosted Supabase PostgreSQL database and protected by per-user Row Level Security.
 - Use **Sign out** before leaving a shared computer.
 
 ## Support
