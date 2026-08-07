@@ -101,15 +101,33 @@ export default function Home() {
       .map((part) => part[0])
       .join("")
       .toUpperCase() || "CU";
+  const isDemoAccount =
+    profile.email.toLowerCase() === "kashmirasanjaypatil@gmail.com";
+  const applicationCount = (isDemoAccount ? 24 : 0) + added.length;
+  const pipeline = isDemoAccount
+    ? [
+        { n: 9 + added.length, l: "Saved", c: "gray" },
+        { n: 8, l: "Applied", c: "blue" },
+        { n: 3, l: "OA", c: "purple" },
+        { n: 2, l: "Interview", c: "orange" },
+        { n: 1, l: "Offer", c: "green" },
+      ]
+    : [
+        { n: added.length, l: "Saved", c: "gray" },
+        { n: 0, l: "Applied", c: "blue" },
+        { n: 0, l: "OA", c: "purple" },
+        { n: 0, l: "Interview", c: "orange" },
+        { n: 0, l: "Offer", c: "green" },
+      ];
 
   const rows = useMemo(
     () =>
-      [...added, ...applications].filter((item) =>
+      [...added, ...(isDemoAccount ? applications : [])].filter((item) =>
         `${item.company} ${item.role} ${item.location}`
           .toLowerCase()
           .includes(query.toLowerCase()),
       ),
-    [added, query],
+    [added, isDemoAccount, query],
   );
 
   function notify(message: string) {
@@ -191,7 +209,9 @@ export default function Home() {
                 {["⌂", "▣", "⌕", "◇", "◉", "♧"][index]}
               </span>
               {item}
-              {item === "Applications" && <span className="count">24</span>}
+              {item === "Applications" && (
+                <span className="count">{applicationCount}</span>
+              )}
             </button>
           ))}
           <p className="nav-label tools-label">Your tools</p>
@@ -279,25 +299,31 @@ export default function Home() {
             <article>
               <div className="metric-top">
                 <span className="metric-icon coral">↗</span>
-                <span className="trend up">+4 this week</span>
+                <span className={isDemoAccount ? "trend up" : "trend"}>
+                  {isDemoAccount ? "+4 this week" : "Start tracking"}
+                </span>
               </div>
-              <strong>24</strong>
+              <strong>{applicationCount}</strong>
               <p>Applications sent</p>
             </article>
             <article>
               <div className="metric-top">
                 <span className="metric-icon blue">◷</span>
-                <span className="trend">3 active</span>
+                <span className="trend">
+                  {isDemoAccount ? "3 active" : "No active roles"}
+                </span>
               </div>
-              <strong>6</strong>
+              <strong>{isDemoAccount ? 6 : 0}</strong>
               <p>In progress</p>
             </article>
             <article>
               <div className="metric-top">
                 <span className="metric-icon amber">⌁</span>
-                <span className="trend up">+5.2%</span>
+                <span className={isDemoAccount ? "trend up" : "trend"}>
+                  {isDemoAccount ? "+5.2%" : "No data yet"}
+                </span>
               </div>
-              <strong>37.5%</strong>
+              <strong>{isDemoAccount ? "37.5%" : "0%"}</strong>
               <p>Response rate</p>
             </article>
             <article>
@@ -305,7 +331,7 @@ export default function Home() {
                 <span className="metric-icon green">✦</span>
                 <span className="trend">This month</span>
               </div>
-              <strong>2</strong>
+              <strong>{isDemoAccount ? 2 : 0}</strong>
               <p>Interviews</p>
             </article>
           </section>
@@ -327,13 +353,7 @@ export default function Home() {
                 </button>
               </div>
               <div className="pipeline-stats">
-                {[
-                  { n: 9, l: "Saved", c: "gray" },
-                  { n: 8, l: "Applied", c: "blue" },
-                  { n: 3, l: "OA", c: "purple" },
-                  { n: 2, l: "Interview", c: "orange" },
-                  { n: 1, l: "Offer", c: "green" },
-                ].map((item) => (
+                {pipeline.map((item) => (
                   <div key={item.l}>
                     <strong>{item.n}</strong>
                     <span>
@@ -353,63 +373,83 @@ export default function Home() {
               <div className="conversion">
                 <span>Application → interview conversion</span>
                 <strong>
-                  20.8% <em>↑ 3.1%</em>
+                  {isDemoAccount ? (
+                    <>
+                      20.8% <em>↑ 3.1%</em>
+                    </>
+                  ) : (
+                    "0%"
+                  )}
                 </strong>
               </div>
             </article>
 
-            <article className="panel focus-panel">
-              <div className="focus-top">
-                <span className="spark">✦</span>
-                <span>Today’s focus</span>
-                <small>3 tasks</small>
-              </div>
-              <h2>Small steps, big momentum.</h2>
-              <label>
-                <input
-                  type="checkbox"
-                  onChange={(e) =>
-                    e.currentTarget.parentElement?.classList.toggle(
-                      "done",
-                      e.currentTarget.checked,
-                    )
-                  }
-                />
-                <span>
-                  Prepare for Razorpay technical round
-                  <small>Tomorrow, 11:00 AM</small>
-                </span>
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  onChange={(e) =>
-                    e.currentTarget.parentElement?.classList.toggle(
-                      "done",
-                      e.currentTarget.checked,
-                    )
-                  }
-                />
-                <span>
-                  Complete Zepto online assessment<small>Due Aug 9</small>
-                </span>
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  onChange={(e) =>
-                    e.currentTarget.parentElement?.classList.toggle(
-                      "done",
-                      e.currentTarget.checked,
-                    )
-                  }
-                />
-                <span>
-                  Follow up with Priya at Atlassian
-                  <small>Last contacted 5 days ago</small>
-                </span>
-              </label>
-            </article>
+            {isDemoAccount ? (
+              <article className="panel focus-panel">
+                <div className="focus-top">
+                  <span className="spark">✦</span>
+                  <span>Today’s focus</span>
+                  <small>3 tasks</small>
+                </div>
+                <h2>Small steps, big momentum.</h2>
+                <label>
+                  <input
+                    type="checkbox"
+                    onChange={(e) =>
+                      e.currentTarget.parentElement?.classList.toggle(
+                        "done",
+                        e.currentTarget.checked,
+                      )
+                    }
+                  />
+                  <span>
+                    Prepare for Razorpay technical round
+                    <small>Tomorrow, 11:00 AM</small>
+                  </span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    onChange={(e) =>
+                      e.currentTarget.parentElement?.classList.toggle(
+                        "done",
+                        e.currentTarget.checked,
+                      )
+                    }
+                  />
+                  <span>
+                    Complete Zepto online assessment<small>Due Aug 9</small>
+                  </span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    onChange={(e) =>
+                      e.currentTarget.parentElement?.classList.toggle(
+                        "done",
+                        e.currentTarget.checked,
+                      )
+                    }
+                  />
+                  <span>
+                    Follow up with Priya at Atlassian
+                    <small>Last contacted 5 days ago</small>
+                  </span>
+                </label>
+              </article>
+            ) : (
+              <article className="panel focus-panel">
+                <div className="focus-top">
+                  <span className="spark">✦</span>
+                  <span>Today’s focus</span>
+                  <small>0 tasks</small>
+                </div>
+                <h2>Your fresh start begins here.</h2>
+                <p className="focus-empty">
+                  Add an application to begin building your weekly plan.
+                </p>
+              </article>
+            )}
           </section>
 
           <section className="grid-main lower-grid">
@@ -458,7 +498,11 @@ export default function Home() {
                   </button>
                 ))}
                 {rows.length === 0 && (
-                  <div className="empty">No applications match “{query}”.</div>
+                  <div className="empty">
+                    {query
+                      ? `No applications match “${query}”.`
+                      : "No applications yet. Add your first opportunity to get started."}
+                  </div>
                 )}
               </div>
             </article>
@@ -477,54 +521,62 @@ export default function Home() {
                     ▦
                   </button>
                 </div>
-                <div className="event">
-                  <div className="date-box urgent">
-                    <strong>08</strong>
-                    <small>AUG</small>
-                  </div>
-                  <div>
-                    <strong>Razorpay interview</strong>
-                    <small>11:00 AM · Google Meet</small>
-                  </div>
-                  <span className="event-dot coral-bg" />
-                </div>
-                <div className="event">
-                  <div className="date-box">
-                    <strong>09</strong>
-                    <small>AUG</small>
-                  </div>
-                  <div>
-                    <strong>Zepto OA deadline</strong>
-                    <small>11:59 PM · HackerRank</small>
-                  </div>
-                  <span className="event-dot purple-bg" />
-                </div>
-                <div className="event">
-                  <div className="date-box">
-                    <strong>12</strong>
-                    <small>AUG</small>
-                  </div>
-                  <div>
-                    <strong>Referral follow-up</strong>
-                    <small>Priya · Atlassian</small>
-                  </div>
-                  <span className="event-dot blue-bg" />
-                </div>
+                {isDemoAccount ? (
+                  <>
+                    <div className="event">
+                      <div className="date-box urgent">
+                        <strong>08</strong>
+                        <small>AUG</small>
+                      </div>
+                      <div>
+                        <strong>Razorpay interview</strong>
+                        <small>11:00 AM · Google Meet</small>
+                      </div>
+                      <span className="event-dot coral-bg" />
+                    </div>
+                    <div className="event">
+                      <div className="date-box">
+                        <strong>09</strong>
+                        <small>AUG</small>
+                      </div>
+                      <div>
+                        <strong>Zepto OA deadline</strong>
+                        <small>11:59 PM · HackerRank</small>
+                      </div>
+                      <span className="event-dot purple-bg" />
+                    </div>
+                    <div className="event">
+                      <div className="date-box">
+                        <strong>12</strong>
+                        <small>AUG</small>
+                      </div>
+                      <div>
+                        <strong>Referral follow-up</strong>
+                        <small>Priya · Atlassian</small>
+                      </div>
+                      <span className="event-dot blue-bg" />
+                    </div>
+                  </>
+                ) : (
+                  <div className="empty">No upcoming deadlines yet.</div>
+                )}
               </article>
-              <article className="insight-card">
-                <span className="insight-icon">↗</span>
-                <div>
-                  <small>CAREER INSIGHT</small>
-                  <strong>Your response rate is rising.</strong>
-                  <p>
-                    Backend roles are getting <b>2.4×</b> more responses than
-                    your other applications.
-                  </p>
-                  <button onClick={() => notify("Analytics insight opened")}>
-                    See full insight →
-                  </button>
-                </div>
-              </article>
+              {isDemoAccount && (
+                <article className="insight-card">
+                  <span className="insight-icon">↗</span>
+                  <div>
+                    <small>CAREER INSIGHT</small>
+                    <strong>Your response rate is rising.</strong>
+                    <p>
+                      Backend roles are getting <b>2.4×</b> more responses than
+                      your other applications.
+                    </p>
+                    <button onClick={() => notify("Analytics insight opened")}>
+                      See full insight →
+                    </button>
+                  </div>
+                </article>
+              )}
             </aside>
           </section>
         </div>
@@ -574,19 +626,72 @@ export default function Home() {
         </div>
       )}
       {showProfile && (
-        <div className="modal-backdrop" onMouseDown={() => setShowProfile(false)}>
-          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="profile-title" onMouseDown={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowProfile(false)}>×</button>
+        <div
+          className="modal-backdrop"
+          onMouseDown={() => setShowProfile(false)}
+        >
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profile-title"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setShowProfile(false)}
+            >
+              ×
+            </button>
             <span className="modal-kicker">YOUR PROFILE</span>
             <h2 id="profile-title">Edit profile</h2>
             <p>Keep your CareerOS identity current.</p>
             <form onSubmit={saveProfile}>
-              <label>Full name<input name="fullName" defaultValue={profile.fullName} required autoFocus /></label>
-              <label>Professional headline<input name="headline" defaultValue={profile.headline} placeholder="e.g. Backend engineer" /></label>
-              <label>Location<input name="location" defaultValue={profile.location} placeholder="e.g. Bengaluru, India" /></label>
-              <label>Email address<input value={profile.email} disabled /></label>
-              <div className="profile-session"><button type="button" className="sign-out-button" onClick={signOut}>Sign out</button><span>Email is managed by your sign-in provider.</span></div>
-              <div className="modal-actions"><button type="button" onClick={() => setShowProfile(false)}>Cancel</button><button type="submit">Save profile</button></div>
+              <label>
+                Full name
+                <input
+                  name="fullName"
+                  defaultValue={profile.fullName}
+                  required
+                  autoFocus
+                />
+              </label>
+              <label>
+                Professional headline
+                <input
+                  name="headline"
+                  defaultValue={profile.headline}
+                  placeholder="e.g. Backend engineer"
+                />
+              </label>
+              <label>
+                Location
+                <input
+                  name="location"
+                  defaultValue={profile.location}
+                  placeholder="e.g. Bengaluru, India"
+                />
+              </label>
+              <label>
+                Email address
+                <input value={profile.email} disabled />
+              </label>
+              <div className="profile-session">
+                <button
+                  type="button"
+                  className="sign-out-button"
+                  onClick={signOut}
+                >
+                  Sign out
+                </button>
+                <span>Email is managed by your sign-in provider.</span>
+              </div>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowProfile(false)}>
+                  Cancel
+                </button>
+                <button type="submit">Save profile</button>
+              </div>
             </form>
           </div>
         </div>

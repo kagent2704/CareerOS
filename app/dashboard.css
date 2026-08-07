@@ -569,6 +569,11 @@
   text-decoration: line-through;
   color: #8d8f89;
 }
+.focus-empty {
+  color: #96998f;
+  font-size: 10px;
+  line-height: 1.6;
+}
 .lower-grid {
   align-items: start;
 }
