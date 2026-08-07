@@ -140,11 +140,8 @@
 }
 .social-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 9px;
-}
-.social-grid-two {
-  grid-template-columns: repeat(2, 1fr);
 }
 .social-grid button {
   height: 43px;
@@ -167,24 +164,6 @@
   font-weight: 800;
   color: #4285f4;
   font-size: 15px;
-}
-.microsoft {
-  display: grid;
-  grid-template-columns: repeat(2, 6px);
-  grid-template-rows: repeat(2, 6px);
-  gap: 1px;
-}
-.microsoft i:nth-child(1) {
-  background: #f35325;
-}
-.microsoft i:nth-child(2) {
-  background: #81bc06;
-}
-.microsoft i:nth-child(3) {
-  background: #05a6f0;
-}
-.microsoft i:nth-child(4) {
-  background: #ffba08;
 }
 .divider {
   display: flex;
