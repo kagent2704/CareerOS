@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import "./dashboard.css";
 
 const applications = [
@@ -13,6 +15,7 @@ const applications = [
 const nav = ["Overview", "Applications", "Jobs", "Companies", "Interviews", "Network"];
 
 export default function Home() {
+  const router = useRouter();
   const [active, setActive] = useState("Overview");
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -35,6 +38,13 @@ export default function Home() {
     setAdded((current) => [{ company, initials: company.slice(0, 2).toUpperCase(), color: "#ef6a3a", role: String(data.get("role") || "New role"), location: "Pune · Hybrid", stage: "Saved", date: "Today", match: 82 }, ...current]);
     setShowModal(false);
     notify("Application added to your pipeline");
+  }
+
+  async function signOut() {
+    if (!isSupabaseConfigured()) return notify("Supabase is not connected yet");
+    await createClient().auth.signOut();
+    router.push("/auth");
+    router.refresh();
   }
 
   return (
@@ -64,8 +74,8 @@ export default function Home() {
           <p>Get a focused plan for your week.</p>
           <button onClick={() => notify("Your weekly plan is being prepared")}>Plan my week <span>→</span></button>
         </div>
-        <button className="profile" onClick={() => notify("Profile menu opened")}>
-          <span className="avatar">KM</span><span><strong>Kashish Mehta</strong><small>Student plan</small></span><span className="dots">•••</span>
+        <button className="profile" onClick={signOut} title="Sign out">
+          <span className="avatar">KM</span><span><strong>Kashish Mehta</strong><small>Click to sign out</small></span><span className="dots">↗</span>
         </button>
       </aside>
 
