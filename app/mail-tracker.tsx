@@ -24,6 +24,7 @@ export function MailTracker({
   } | null>(null);
   const [events, setEvents] = useState<MailEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [configured, setConfigured] = useState<boolean | null>(null);
   useEffect(() => {
     const client = createClient();
     Promise.all([
@@ -39,9 +40,11 @@ export function MailTracker({
         )
         .order("received_at", { ascending: false })
         .limit(50),
-    ]).then(([connected, mail]) => {
+      fetch("/api/mail/status").then((response) => response.json()),
+    ]).then(([connected, mail, status]) => {
       if (connected.data) setConnection(connected.data);
       if (mail.data) setEvents(mail.data);
+      setConfigured(Boolean(status.configured));
       setLoading(false);
     });
   }, []);
@@ -113,10 +116,14 @@ export function MailTracker({
         </div>
         {connection ? (
           <button onClick={sync}>Sync now</button>
-        ) : (
+        ) : configured ? (
           <a className="mail-connect" href="/api/mail/connect">
             Connect Gmail metadata
           </a>
+        ) : (
+          <span className="integration-pending">
+            Administrator activation pending
+          </span>
         )}
       </section>
       <section className="workspace-card">

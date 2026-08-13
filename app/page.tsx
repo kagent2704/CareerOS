@@ -194,6 +194,16 @@ export default function Home() {
     leetcode: "",
     kaggle: "",
   });
+  const todayLabel = new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  })
+    .format(new Date())
+    .toUpperCase();
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -716,8 +726,10 @@ export default function Home() {
           <div className="page-wrap">
             <section className="welcome">
               <div>
-                <p className="eyebrow">FRIDAY, AUGUST 7</p>
-                <h1>Good morning, {firstName}.</h1>
+                <p className="eyebrow">{todayLabel}</p>
+                <h1>
+                  {greeting}, {firstName}.
+                </h1>
                 <p>Here’s where your job search stands today.</p>
               </div>
               <div className="week-chip">

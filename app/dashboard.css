@@ -2241,6 +2241,14 @@
     display: none;
   }
 }
+.integration-pending {
+  padding: 10px 13px;
+  border-radius: 9px;
+  background: #fff2cf;
+  color: #735b1e;
+  font-weight: 750;
+  white-space: nowrap;
+}
 .asset-hero {
   position: relative;
   background: #242821;
