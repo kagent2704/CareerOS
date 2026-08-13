@@ -27,6 +27,7 @@ type Application = {
   coverLetter: string;
   notes: string;
   timeline: Array<{ stage: string; at: string; note: string }>;
+  createdAt: string;
 };
 
 type ApplicationRow = {
@@ -45,6 +46,7 @@ type ApplicationRow = {
   cover_letter: string;
   notes: string;
   timeline: Array<{ stage: string; at: string; note: string }>;
+  created_at: string;
 };
 
 const demoApplications: Array<
@@ -104,7 +106,7 @@ const demoApplications: Array<
 
 const companyColors = ["#5b5bd6", "#1769e0", "#7f38c7", "#151515", "#ef6a3a"];
 const applicationSelect =
-  "id, company, role, location, stage, match_score, deadline, source_url, resume_item_id, salary, referral, recruiter, cover_letter, notes, timeline";
+  "id, company, role, location, stage, match_score, deadline, source_url, resume_item_id, salary, referral, recruiter, cover_letter, notes, timeline, created_at";
 
 function formatApplication(row: ApplicationRow): Application {
   const colorIndex =
@@ -136,6 +138,7 @@ function formatApplication(row: ApplicationRow): Application {
     coverLetter: row.cover_letter || "",
     notes: row.notes || "",
     timeline: row.timeline || [],
+    createdAt: row.created_at,
   };
 }
 
@@ -178,6 +181,17 @@ export default function Home() {
     headline: "Building my next opportunity",
     location: "",
     email: "",
+    university: "",
+    graduationYear: "",
+    cgpa: "",
+    skills: "",
+    experience: "",
+    projects: "",
+    portfolio: "",
+    github: "",
+    linkedin: "",
+    leetcode: "",
+    kaggle: "",
   });
 
   useEffect(() => {
@@ -194,6 +208,19 @@ export default function Home() {
         headline: user.user_metadata.headline || "Building my next opportunity",
         location: user.user_metadata.location || "",
         email: user.email || "",
+        university: user.user_metadata.university || "",
+        graduationYear: user.user_metadata.graduation_year || "",
+        cgpa: user.user_metadata.cgpa || "",
+        skills: Array.isArray(user.user_metadata.skills)
+          ? user.user_metadata.skills.join(", ")
+          : user.user_metadata.skills || "",
+        experience: user.user_metadata.experience || "",
+        projects: user.user_metadata.projects || "",
+        portfolio: user.user_metadata.portfolio || "",
+        github: user.user_metadata.github || "",
+        linkedin: user.user_metadata.linkedin || "",
+        leetcode: user.user_metadata.leetcode || "",
+        kaggle: user.user_metadata.kaggle || "",
       });
       let { data, error } = await supabase
         .from("applications")
@@ -547,12 +574,37 @@ export default function Home() {
       fullName: String(data.get("fullName") || "").trim(),
       headline: String(data.get("headline") || "").trim(),
       location: String(data.get("location") || "").trim(),
+      university: String(data.get("university") || "").trim(),
+      graduationYear: String(data.get("graduationYear") || "").trim(),
+      cgpa: String(data.get("cgpa") || "").trim(),
+      skills: String(data.get("skills") || "").trim(),
+      experience: String(data.get("experience") || "").trim(),
+      projects: String(data.get("projects") || "").trim(),
+      portfolio: String(data.get("portfolio") || "").trim(),
+      github: String(data.get("github") || "").trim(),
+      linkedin: String(data.get("linkedin") || "").trim(),
+      leetcode: String(data.get("leetcode") || "").trim(),
+      kaggle: String(data.get("kaggle") || "").trim(),
     };
     const { error } = await createClient().auth.updateUser({
       data: {
         full_name: nextProfile.fullName,
         headline: nextProfile.headline,
         location: nextProfile.location,
+        university: nextProfile.university,
+        graduation_year: nextProfile.graduationYear,
+        cgpa: nextProfile.cgpa,
+        skills: nextProfile.skills
+          .split(",")
+          .map((skill) => skill.trim())
+          .filter(Boolean),
+        experience: nextProfile.experience,
+        projects: nextProfile.projects,
+        portfolio: nextProfile.portfolio,
+        github: nextProfile.github,
+        linkedin: nextProfile.linkedin,
+        leetcode: nextProfile.leetcode,
+        kaggle: nextProfile.kaggle,
       },
     });
     if (error) return notify(error.message);
@@ -970,7 +1022,7 @@ export default function Home() {
         ) : active === "AI Match" ? (
           <AIHub items={workspaceItems} notify={notify} />
         ) : active === "Mail Tracker" ? (
-          <MailTracker notify={notify} />
+          <MailTracker notify={notify} onAddItem={addWorkspaceItem} />
         ) : (
           <WorkspaceView
             active={active}
@@ -1131,6 +1183,82 @@ export default function Home() {
                   placeholder="e.g. Bengaluru, India"
                 />
               </label>
+              <div className="form-grid">
+                <label>
+                  University
+                  <input name="university" defaultValue={profile.university} />
+                </label>
+                <label>
+                  Graduation year
+                  <input
+                    name="graduationYear"
+                    inputMode="numeric"
+                    defaultValue={profile.graduationYear}
+                  />
+                </label>
+                <label>
+                  CGPA
+                  <input name="cgpa" defaultValue={profile.cgpa} />
+                </label>
+                <label>
+                  Portfolio URL
+                  <input
+                    name="portfolio"
+                    type="url"
+                    defaultValue={profile.portfolio}
+                  />
+                </label>
+              </div>
+              <label>
+                Skills
+                <textarea
+                  name="skills"
+                  defaultValue={profile.skills}
+                  placeholder="Python, SQL, React, product analytics"
+                />
+              </label>
+              <label>
+                Experience summary
+                <textarea name="experience" defaultValue={profile.experience} />
+              </label>
+              <label>
+                Projects
+                <textarea name="projects" defaultValue={profile.projects} />
+              </label>
+              <div className="form-grid">
+                <label>
+                  GitHub
+                  <input
+                    name="github"
+                    type="url"
+                    defaultValue={profile.github}
+                  />
+                </label>
+                <label>
+                  LinkedIn
+                  <input
+                    name="linkedin"
+                    type="url"
+                    defaultValue={profile.linkedin}
+                  />
+                </label>
+                <label>
+                  LeetCode
+                  <input
+                    name="leetcode"
+                    type="url"
+                    defaultValue={profile.leetcode}
+                  />
+                </label>
+                <label>
+                  Kaggle
+                  <input
+                    name="kaggle"
+                    type="url"
+                    defaultValue={profile.kaggle}
+                  />
+                </label>
+              </div>
               <label>
                 Email address
                 <input value={profile.email} disabled />

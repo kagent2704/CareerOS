@@ -20,6 +20,7 @@ export type WorkspaceApplication = {
   stage: string;
   date: string;
   match: number;
+  createdAt?: string;
 };
 
 type Props = {
@@ -942,6 +943,10 @@ function JobsBoard(props: Props) {
     roles?: string;
     locations?: string;
     modes?: string[];
+    companyTypes?: string[];
+    minimumSalary?: string;
+    idealSalary?: string;
+    dreamSalary?: string;
   };
   const [roles, setRoles] = useState(
     initial.roles || "Software Engineer, Backend Engineer, Data Engineer",
@@ -952,6 +957,14 @@ function JobsBoard(props: Props) {
   const [modes, setModes] = useState<string[]>(
     initial.modes || ["Remote", "Hybrid", "On-site"],
   );
+  const [companyTypes, setCompanyTypes] = useState<string[]>(
+    initial.companyTypes || ["Product", "Startup", "Finance"],
+  );
+  const [minimumSalary, setMinimumSalary] = useState(
+    initial.minimumSalary || "",
+  );
+  const [idealSalary, setIdealSalary] = useState(initial.idealSalary || "");
+  const [dreamSalary, setDreamSalary] = useState(initial.dreamSalary || "");
   const [editing, setEditing] = useState(false);
   const [liveJobs, setLiveJobs] = useState<JobCard[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -1127,7 +1140,17 @@ function JobsBoard(props: Props) {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (await props.onSavePreferences({ roles, locations, modes }))
+                if (
+                  await props.onSavePreferences({
+                    roles,
+                    locations,
+                    modes,
+                    companyTypes,
+                    minimumSalary,
+                    idealSalary,
+                    dreamSalary,
+                  })
+                )
                   setEditing(false);
               }}
             >
@@ -1168,6 +1191,60 @@ function JobsBoard(props: Props) {
                   ))}
                 </div>
               </fieldset>
+              <fieldset>
+                <legend>Preferred company types</legend>
+                <div className="check-grid">
+                  {[
+                    "Product",
+                    "Consulting",
+                    "Finance",
+                    "Service",
+                    "Startup",
+                    "Government",
+                  ].map((type) => (
+                    <label key={type}>
+                      <input
+                        type="checkbox"
+                        checked={companyTypes.includes(type)}
+                        onChange={(event) =>
+                          setCompanyTypes((current) =>
+                            event.target.checked
+                              ? [...current, type]
+                              : current.filter((value) => value !== type),
+                          )
+                        }
+                      />
+                      {type}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <div className="form-grid">
+                <label>
+                  Minimum salary
+                  <input
+                    value={minimumSalary}
+                    onChange={(event) => setMinimumSalary(event.target.value)}
+                    placeholder="₹10 LPA"
+                  />
+                </label>
+                <label>
+                  Ideal salary
+                  <input
+                    value={idealSalary}
+                    onChange={(event) => setIdealSalary(event.target.value)}
+                    placeholder="₹16 LPA"
+                  />
+                </label>
+                <label>
+                  Dream salary
+                  <input
+                    value={dreamSalary}
+                    onChange={(event) => setDreamSalary(event.target.value)}
+                    placeholder="₹24 LPA"
+                  />
+                </label>
+              </div>
               <div className="modal-actions">
                 <button type="button" onClick={() => setEditing(false)}>
                   Cancel
@@ -1453,6 +1530,39 @@ function Analytics({ applications }: { applications: WorkspaceApplication[] }) {
   ).length;
   const offers = applications.filter((a) => a.stage === "Offer").length;
   const roles = [...new Set(applications.map((a) => a.role))];
+  const applied = applications.filter((a) => a.stage !== "Saved").length;
+  const responses = applications.filter((a) =>
+    ["OA", "Interview", "Offer", "Rejected"].includes(a.stage),
+  ).length;
+  const grouped = (values: string[]) =>
+    Object.entries(
+      values.reduce<Record<string, number>>((result, value) => {
+        const key = value.trim() || "Not specified";
+        result[key] = (result[key] || 0) + 1;
+        return result;
+      }, {}),
+    )
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6);
+  const roleGroups = grouped(
+    applications.map((application) => application.role),
+  );
+  const locationGroups = grouped(
+    applications.map((application) =>
+      application.location.split("·")[0].trim(),
+    ),
+  );
+  const weekGroups = grouped(
+    applications.map((application) => {
+      const date = new Date(application.createdAt || "1970-01-01T00:00:00Z");
+      const start = new Date(date);
+      start.setDate(date.getDate() - date.getDay());
+      return start.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      });
+    }),
+  );
   return (
     <div className="workspace-page">
       <WorkspaceHeader
@@ -1478,8 +1588,10 @@ function Analytics({ applications }: { applications: WorkspaceApplication[] }) {
           <span>Offer conversion</span>
         </article>
         <article>
-          <strong>{roles.length}</strong>
-          <span>Roles targeted</span>
+          <strong>
+            {applied ? Math.round((responses / applied) * 100) : 0}%
+          </strong>
+          <span>Response rate</span>
         </article>
       </div>
       <div className="analytics-grid">
@@ -1518,6 +1630,68 @@ function Analytics({ applications }: { applications: WorkspaceApplication[] }) {
           </p>
         </article>
       </div>
+      <div className="analytics-grid analytics-breakdowns">
+        <Breakdown
+          title="Applications by role"
+          rows={roleGroups}
+          total={total}
+        />
+        <Breakdown
+          title="Applications by location"
+          rows={locationGroups}
+          total={total}
+        />
+        <Breakdown
+          title="Applications by week"
+          rows={weekGroups}
+          total={total}
+        />
+        <article className="workspace-card">
+          <h2>Portfolio breadth</h2>
+          <div className="health-score">{roles.length}</div>
+          <p>
+            distinct roles across{" "}
+            {
+              new Set(applications.map((application) => application.company))
+                .size
+            }{" "}
+            companies.
+          </p>
+        </article>
+      </div>
     </div>
+  );
+}
+
+function Breakdown({
+  title,
+  rows,
+  total,
+}: {
+  title: string;
+  rows: Array<[string, number]>;
+  total: number;
+}) {
+  return (
+    <article className="workspace-card">
+      <h2>{title}</h2>
+      {rows.length ? (
+        rows.map(([label, count]) => (
+          <div className="bar-row" key={label}>
+            <span>{label}</span>
+            <i>
+              <b
+                style={{
+                  width: `${Math.max(5, (count / Math.max(total, 1)) * 100)}%`,
+                }}
+              />
+            </i>
+            <strong>{count}</strong>
+          </div>
+        ))
+      ) : (
+        <p>No data yet.</p>
+      )}
+    </article>
   );
 }

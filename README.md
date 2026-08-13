@@ -51,7 +51,7 @@ For security, sign out when using CareerOS on a shared device.
    - Location
 3. Select **Save profile**.
 
-Your name, initials, headline, and dashboard greeting update immediately. Profile changes are saved securely with your CareerOS account. Your email address is controlled by your sign-in provider and cannot be edited from this window.
+Your private career profile can also store university, graduation year, CGPA, skills, experience, projects, portfolio, GitHub, LinkedIn, LeetCode, and Kaggle links. Your name, initials, headline, and dashboard greeting update immediately. Profile changes are saved securely with your CareerOS account. Your email address is controlled by your sign-in provider and cannot be edited from this window.
 
 ## 4. Understand the dashboard
 
@@ -115,9 +115,9 @@ Every navigation item opens a dedicated workspace:
 - **Resume Lab** securely uploads private PDF, DOC, and DOCX resume versions up to 10 MB. Each card stores its target-role notes and opens the original file through a short-lived signed link.
 - **Interview Prep** uploads private prep material and question-bank documents in PDF, Word, text, PNG, or JPG formats.
 - **Documents** uploads private certificates, offer letters, marksheets, portfolio files, and other career documents.
-- **Analytics** calculates stage distribution and conversion rates from your real applications.
+- **Analytics** calculates stage distribution, response/interview/offer conversion, applications by role, applications by location, weekly activity, role breadth, and company breadth from your real applications.
 - **AI Match** compares a selected uploaded resume with a pasted job description. It produces a transparent 100-point recruiter rubric, evidence-backed strengths and gaps, mandatory-requirement coverage, likely recruiter objections, truthful resume changes, and interview-preparation priorities. Select **Build my job-board profile** to extract an evidence-only reusable candidate profile and personalize live job ranking. Reports and profiles are stored privately in the signed-in account.
-- **Mail Tracker** can connect a separate Gmail OAuth grant using the metadata-only scope. It reads sender, subject, date, and labels—not message bodies or attachments—classifies likely applications, assessments, interviews, offers, rejections, and job alerts, and requires user review. Gmail is unavailable until the administrator completes the activation steps below.
+- **Mail Tracker** can connect a separate Gmail OAuth grant using the metadata-only scope. It reads sender, subject, date, and labels—not message bodies or attachments—classifies likely applications, assessments, interviews, offers, rejections, and job alerts, and requires user review. An approved signal can be added to the private workspace as a review item; CareerOS does not silently mutate an application. Gmail is unavailable until the administrator completes the activation steps below.
 
 ### Configure CareerOS AI
 

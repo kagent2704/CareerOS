@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { WorkspaceItem } from "./workspaces";
 type MailEvent = {
   id: string;
   sender: string;
@@ -10,7 +11,13 @@ type MailEvent = {
   confidence: number;
   action_status: string;
 };
-export function MailTracker({ notify }: { notify: (message: string) => void }) {
+export function MailTracker({
+  notify,
+  onAddItem,
+}: {
+  notify: (message: string) => void;
+  onAddItem: (item: Omit<WorkspaceItem, "id">) => Promise<boolean>;
+}) {
   const [connection, setConnection] = useState<{
     email: string;
     last_synced_at: string | null;
@@ -56,6 +63,29 @@ export function MailTracker({ notify }: { notify: (message: string) => void }) {
     const payload = await response.json();
     if (!response.ok) return notify(payload.error || "Sync failed");
     notify(`${payload.imported} career messages imported; refresh to review`);
+  }
+  async function addToWorkspace(event: MailEvent) {
+    const kind =
+      event.category === "interview"
+        ? "interview"
+        : event.category === "job_alert"
+          ? "job"
+          : "task";
+    const saved = await onAddItem({
+      kind,
+      title: event.subject,
+      subtitle: event.sender,
+      status: event.category === "rejection" ? "Closed" : "Needs review",
+      due_date: null,
+      data: {
+        source: "gmail_metadata",
+        mail_event_id: event.id,
+        category: event.category,
+        received_at: event.received_at,
+        confidence: event.confidence,
+      },
+    });
+    if (saved) notify("Mail signal added to your workspace for review");
   }
   return (
     <div className="workspace-page mail-page">
@@ -130,7 +160,17 @@ export function MailTracker({ notify }: { notify: (message: string) => void }) {
                     </button>
                   </>
                 ) : (
-                  <b>{event.action_status}</b>
+                  <>
+                    <b>{event.action_status}</b>
+                    {event.action_status === "approved" && (
+                      <button
+                        className="primary"
+                        onClick={() => addToWorkspace(event)}
+                      >
+                        Add to workspace
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </article>
