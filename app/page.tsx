@@ -113,6 +113,7 @@ export default function Home() {
   const [active, setActive] = useState("Overview");
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [applicationSeed, setApplicationSeed] = useState<{ company?: string; role?: string; location?: string; match?: number; sourceUrl?: string }>({});
   const [showProfile, setShowProfile] = useState(false);
   const [selectedApplication, setSelectedApplication] =
     useState<Application | null>(null);
@@ -259,6 +260,7 @@ export default function Home() {
         role: String(data.get("role") || "").trim(),
         location: String(data.get("location") || "").trim(),
         stage: String(data.get("stage") || "Saved"),
+        match_score: Number(data.get("match_score") || 0),
         deadline: String(data.get("deadline") || "") || null,
       })
       .select("id, company, role, location, stage, match_score, deadline")
@@ -914,7 +916,7 @@ export default function Home() {
             applications={storedApplications}
             items={workspaceItems}
             query={query}
-            onAddApplication={() => setShowModal(true)}
+            onAddApplication={(seed) => { setApplicationSeed(seed || {}); setShowModal(true); }}
             onSelectApplication={(application) =>
               setSelectedApplication(application as Application)
             }
@@ -947,6 +949,7 @@ export default function Home() {
                 Company
                 <input
                   name="company"
+                  defaultValue={applicationSeed.company}
                   placeholder="e.g. Microsoft"
                   required
                   autoFocus
@@ -956,6 +959,7 @@ export default function Home() {
                 Role
                 <input
                   name="role"
+                  defaultValue={applicationSeed.role}
                   placeholder="e.g. Software Engineer"
                   required
                 />
@@ -979,6 +983,7 @@ export default function Home() {
                 Deadline
                 <input name="deadline" type="date" />
               </label>
+              <input type="hidden" name="match_score" value={applicationSeed.match || 0} />
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(false)}>
                   Cancel

@@ -27,7 +27,7 @@ type Props = {
   applications: WorkspaceApplication[];
   items: WorkspaceItem[];
   query: string;
-  onAddApplication: () => void;
+  onAddApplication: (seed?: { company?: string; role?: string; location?: string; match?: number; sourceUrl?: string }) => void;
   onSelectApplication: (application: WorkspaceApplication) => void;
   onAddItem: (item: Omit<WorkspaceItem, "id">) => Promise<boolean>;
   onDeleteItem: (item: WorkspaceItem) => Promise<void>;
@@ -1061,7 +1061,8 @@ function JobsBoard(props: Props) {
               >
                 {saved.has(job.id) ? "Saved" : "Save"}
               </button>
-              {job.url ? <a className="primary" href={job.url} target="_blank" rel="noreferrer">View opening</a> : <button className="primary" onClick={props.onAddApplication}>Track application</button>}
+              <button className="primary" onClick={() => props.onAddApplication({ company: job.company, role: job.role, location: `${job.location} · ${job.mode}`, match: job.match, sourceUrl: job.url })}>Track</button>
+              {job.url && <a href={job.url} target="_blank" rel="noreferrer">Apply ↗</a>}
             </div>
           </article>
         ))}
