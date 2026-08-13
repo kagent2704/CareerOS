@@ -25,6 +25,8 @@ create table if not exists public.mailbox_events (
 );
 alter table public.mailbox_connections enable row level security;
 alter table public.mailbox_events enable row level security;
+drop policy if exists "Users manage mailbox connections" on public.mailbox_connections;
 create policy "Users manage mailbox connections" on public.mailbox_connections for all to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+drop policy if exists "Users manage mailbox events" on public.mailbox_events;
 create policy "Users manage mailbox events" on public.mailbox_events for all to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 grant select, insert, update, delete on public.mailbox_connections, public.mailbox_events to authenticated;

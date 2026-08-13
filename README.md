@@ -106,10 +106,11 @@ The sidebar contains the following workspace areas:
 
 Every navigation item opens a dedicated workspace:
 
-- **Applications** provides a searchable list. Open a record to edit its company, role, location, stage, match score, or deadline, or delete it.
+- **Applications** is the durable recruiting system of record. Live jobs can prefill a new application; each record stores its source, resume version, compensation, referral, recruiter, tailored cover letter, notes, deadline, match score, and an automatically appended stage timeline.
 - **Jobs** loads current openings from public direct-employer Greenhouse feeds and ranks them by your preferred roles, locations, work modes, and latest AI resume profile. Every live card links to the employer's hosted posting and shows its source and update date. If feeds are unavailable, CareerOS labels and uses a small starter catalog instead of presenting it as live data.
 - **Companies** combines employers detected in applications with structured target-company research: industry, locations, website, career page, dream rating, priority, and notes.
 - **Interviews** provides a monthly calendar and agenda. Schedule individual rounds with company, role, date, time, format, meeting link, and preparation notes.
+- **Offers** provides a side-by-side decision table for base salary, bonus, equity, location, growth, learning, culture, commute, and a normalized overall score.
 - **Network** is a relationship CRM for recruiters, alumni, referrers, and hiring teams, including relationship stage, LinkedIn, email, follow-up date, and notes.
 - **Resume Lab** securely uploads private PDF, DOC, and DOCX resume versions up to 10 MB. Each card stores its target-role notes and opens the original file through a short-lived signed link.
 - **Interview Prep** uploads private prep material and question-bank documents in PDF, Word, text, PNG, or JPG formats.

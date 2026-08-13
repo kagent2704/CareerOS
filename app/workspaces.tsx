@@ -27,7 +27,13 @@ type Props = {
   applications: WorkspaceApplication[];
   items: WorkspaceItem[];
   query: string;
-  onAddApplication: (seed?: { company?: string; role?: string; location?: string; match?: number; sourceUrl?: string }) => void;
+  onAddApplication: (seed?: {
+    company?: string;
+    role?: string;
+    location?: string;
+    match?: number;
+    sourceUrl?: string;
+  }) => void;
   onSelectApplication: (application: WorkspaceApplication) => void;
   onAddItem: (item: Omit<WorkspaceItem, "id">) => Promise<boolean>;
   onDeleteItem: (item: WorkspaceItem) => Promise<void>;
@@ -126,6 +132,7 @@ export function WorkspaceView(props: Props) {
 
   if (props.active === "Jobs") return <JobsBoard {...props} />;
   if (props.active === "Interviews") return <InterviewCalendar {...props} />;
+  if (props.active === "Offers") return <OfferComparison {...props} />;
   if (props.active === "Applications") {
     const apps = props.applications.filter((item) =>
       `${item.company} ${item.role} ${item.location} ${item.stage}`
@@ -956,12 +963,17 @@ function JobsBoard(props: Props) {
     fetch(`/api/jobs?${params}`, { signal: controller.signal })
       .then(async (response) => {
         const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Could not load live jobs");
+        if (!response.ok)
+          throw new Error(payload.error || "Could not load live jobs");
         setLiveJobs(payload.jobs || []);
         setPersonalized(Boolean(payload.personalized));
-        setFeedNote(`${payload.jobs?.length || 0} current openings · refreshed ${new Date(payload.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
+        setFeedNote(
+          `${payload.jobs?.length || 0} current openings · refreshed ${new Date(payload.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+        );
       })
-      .catch((error) => { if (error.name !== "AbortError") setFeedNote(error.message); })
+      .catch((error) => {
+        if (error.name !== "AbortError") setFeedNote(error.message);
+      })
       .finally(() => setLoadingJobs(false));
     return () => controller.abort();
   }, [locations, roles]);
@@ -975,7 +987,11 @@ function JobsBoard(props: Props) {
     .split(",")
     .map((v) => v.trim())
     .filter(Boolean);
-  const catalog: JobCard[] = liveJobs.length ? liveJobs : loadingJobs ? [] : fallbackJobs;
+  const catalog: JobCard[] = liveJobs.length
+    ? liveJobs
+    : loadingJobs
+      ? []
+      : fallbackJobs;
   const visible = catalog
     .filter(
       (job) =>
@@ -1019,7 +1035,11 @@ function JobsBoard(props: Props) {
         </p>
         <button onClick={() => setEditing(true)}>Tune recommendations</button>
       </div>
-      <div className="feed-status"><span className={liveJobs.length ? "live-dot" : ""} />{feedNote}. Rankings use your preferences{personalized ? " and resume profile" : ""}.</div>
+      <div className="feed-status">
+        <span className={liveJobs.length ? "live-dot" : ""} />
+        {feedNote}. Rankings use your preferences
+        {personalized ? " and resume profile" : ""}.
+      </div>
       <div className="job-board-grid">
         {visible.map((job) => (
           <article className="job-card" key={job.id}>
@@ -1037,7 +1057,12 @@ function JobsBoard(props: Props) {
               {job.location} · {job.mode}
             </p>
             <div className="skill-line">{job.skills}</div>
-            {job.updatedAt && <small>Updated {new Date(job.updatedAt).toLocaleDateString()} · {job.source}</small>}
+            {job.updatedAt && (
+              <small>
+                Updated {new Date(job.updatedAt).toLocaleDateString()} ·{" "}
+                {job.source}
+              </small>
+            )}
             <div className="job-actions">
               <button
                 disabled={saved.has(job.id)}
@@ -1061,8 +1086,25 @@ function JobsBoard(props: Props) {
               >
                 {saved.has(job.id) ? "Saved" : "Save"}
               </button>
-              <button className="primary" onClick={() => props.onAddApplication({ company: job.company, role: job.role, location: `${job.location} · ${job.mode}`, match: job.match, sourceUrl: job.url })}>Track</button>
-              {job.url && <a href={job.url} target="_blank" rel="noreferrer">Apply ↗</a>}
+              <button
+                className="primary"
+                onClick={() =>
+                  props.onAddApplication({
+                    company: job.company,
+                    role: job.role,
+                    location: `${job.location} · ${job.mode}`,
+                    match: job.match,
+                    sourceUrl: job.url,
+                  })
+                }
+              >
+                Track
+              </button>
+              {job.url && (
+                <a href={job.url} target="_blank" rel="noreferrer">
+                  Apply ↗
+                </a>
+              )}
             </div>
           </article>
         ))}
@@ -1239,6 +1281,166 @@ function InterviewCalendar(props: Props) {
             if (await props.onAddItem(item)) setShowForm(false);
           }}
         />
+      )}
+    </div>
+  );
+}
+
+function OfferComparison(props: Props) {
+  const [showForm, setShowForm] = useState(false);
+  const offers = props.items.filter((item) => item.kind === "offer");
+  return (
+    <div className="workspace-page">
+      <WorkspaceHeader
+        eyebrow="DECISION CENTER"
+        title="Offer comparison"
+        description="Compare total compensation, growth, learning, culture, commute, and confidence before deciding."
+        action="Add offer"
+        onAction={() => setShowForm(true)}
+      />
+      {offers.length ? (
+        <div className="offer-table workspace-card">
+          <div className="offer-row offer-head">
+            <span>Company</span>
+            <span>Compensation</span>
+            <span>Growth</span>
+            <span>Learning</span>
+            <span>Culture</span>
+            <span>Overall</span>
+            <span />
+          </div>
+          {offers.map((offer) => (
+            <div className="offer-row" key={offer.id}>
+              <span>
+                <strong>{offer.title}</strong>
+                <small>{offer.subtitle}</small>
+              </span>
+              <span>
+                {String(offer.data.base || "—")}
+                <small>{String(offer.data.bonus || "No bonus listed")}</small>
+              </span>
+              {["growth", "learning", "culture"].map((field) => (
+                <span key={field}>{String(offer.data[field] || 0)}/5</span>
+              ))}
+              <span className="offer-score">
+                {String(offer.data.overall || 0)}
+              </span>
+              <button onClick={() => props.onDeleteItem(offer)}>×</button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No offers to compare"
+          text="Add an offer when a pipeline reaches the decision stage."
+          action="Add offer"
+          onAction={() => setShowForm(true)}
+        />
+      )}
+      {showForm && (
+        <div className="modal-backdrop" onMouseDown={() => setShowForm(false)}>
+          <div
+            className="modal"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button className="modal-close" onClick={() => setShowForm(false)}>
+              ×
+            </button>
+            <span className="modal-kicker">OFFER DETAILS</span>
+            <h2>Add an offer</h2>
+            <p>Use the same 1–5 scale so the comparison stays honest.</p>
+            <form
+              onSubmit={async (event) => {
+                event.preventDefault();
+                const form = new FormData(event.currentTarget);
+                const ratings = [
+                  "growth",
+                  "learning",
+                  "culture",
+                  "commute",
+                ].map((key) => Number(form.get(key) || 0));
+                const overall = Math.round(
+                  (ratings.reduce((a, b) => a + b, 0) / 20) * 100,
+                );
+                if (
+                  await props.onAddItem({
+                    kind: "offer",
+                    title: String(form.get("company") || ""),
+                    subtitle: `${String(form.get("role") || "")} · ${String(form.get("location") || "")}`,
+                    status: "Considering",
+                    due_date: String(form.get("decision_date") || "") || null,
+                    data: {
+                      base: String(form.get("base") || ""),
+                      bonus: String(form.get("bonus") || ""),
+                      stocks: String(form.get("stocks") || ""),
+                      location: String(form.get("location") || ""),
+                      growth: ratings[0],
+                      learning: ratings[1],
+                      culture: ratings[2],
+                      commute: ratings[3],
+                      overall,
+                      notes: String(form.get("notes") || ""),
+                    },
+                  })
+                )
+                  setShowForm(false);
+              }}
+            >
+              <label>
+                Company
+                <input name="company" required />
+              </label>
+              <label>
+                Role
+                <input name="role" required />
+              </label>
+              <div className="form-grid">
+                <label>
+                  Base salary
+                  <input name="base" placeholder="₹18 LPA" />
+                </label>
+                <label>
+                  Bonus
+                  <input name="bonus" />
+                </label>
+                <label>
+                  Stocks / equity
+                  <input name="stocks" />
+                </label>
+                <label>
+                  Location
+                  <input name="location" />
+                </label>
+              </div>
+              <div className="form-grid">
+                {["growth", "learning", "culture", "commute"].map((field) => (
+                  <label key={field}>
+                    {field[0].toUpperCase() + field.slice(1)}
+                    <select name={field} defaultValue="3">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <option key={value}>{value}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+              <label>
+                Decision date
+                <input type="date" name="decision_date" />
+              </label>
+              <label>
+                Notes
+                <textarea name="notes" />
+              </label>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowForm(false)}>
+                  Cancel
+                </button>
+                <button>Add offer</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

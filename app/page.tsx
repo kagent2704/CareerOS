@@ -18,6 +18,15 @@ type Application = {
   stage: string;
   date: string;
   match: number;
+  deadline: string | null;
+  sourceUrl: string;
+  resumeItemId: string;
+  salary: string;
+  referral: string;
+  recruiter: string;
+  coverLetter: string;
+  notes: string;
+  timeline: Array<{ stage: string; at: string; note: string }>;
 };
 
 type ApplicationRow = {
@@ -28,9 +37,29 @@ type ApplicationRow = {
   stage: string;
   match_score: number;
   deadline: string | null;
+  source_url: string | null;
+  resume_item_id: string | null;
+  salary: string;
+  referral: string;
+  recruiter: string;
+  cover_letter: string;
+  notes: string;
+  timeline: Array<{ stage: string; at: string; note: string }>;
 };
 
-const demoApplications: Omit<Application, "id">[] = [
+const demoApplications: Array<
+  Pick<
+    Application,
+    | "company"
+    | "initials"
+    | "color"
+    | "role"
+    | "location"
+    | "stage"
+    | "date"
+    | "match"
+  >
+> = [
   {
     company: "Razorpay",
     initials: "RZ",
@@ -74,6 +103,8 @@ const demoApplications: Omit<Application, "id">[] = [
 ];
 
 const companyColors = ["#5b5bd6", "#1769e0", "#7f38c7", "#151515", "#ef6a3a"];
+const applicationSelect =
+  "id, company, role, location, stage, match_score, deadline, source_url, resume_item_id, salary, referral, recruiter, cover_letter, notes, timeline";
 
 function formatApplication(row: ApplicationRow): Application {
   const colorIndex =
@@ -96,6 +127,15 @@ function formatApplication(row: ApplicationRow): Application {
         }).format(new Date(`${row.deadline}T00:00:00`))
       : "No date",
     match: row.match_score,
+    deadline: row.deadline,
+    sourceUrl: row.source_url || "",
+    resumeItemId: row.resume_item_id || "",
+    salary: row.salary || "",
+    referral: row.referral || "",
+    recruiter: row.recruiter || "",
+    coverLetter: row.cover_letter || "",
+    notes: row.notes || "",
+    timeline: row.timeline || [],
   };
 }
 
@@ -105,6 +145,7 @@ const nav = [
   "Jobs",
   "Companies",
   "Interviews",
+  "Offers",
   "Network",
 ];
 
@@ -113,7 +154,13 @@ export default function Home() {
   const [active, setActive] = useState("Overview");
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [applicationSeed, setApplicationSeed] = useState<{ company?: string; role?: string; location?: string; match?: number; sourceUrl?: string }>({});
+  const [applicationSeed, setApplicationSeed] = useState<{
+    company?: string;
+    role?: string;
+    location?: string;
+    match?: number;
+    sourceUrl?: string;
+  }>({});
   const [showProfile, setShowProfile] = useState(false);
   const [selectedApplication, setSelectedApplication] =
     useState<Application | null>(null);
@@ -150,7 +197,7 @@ export default function Home() {
       });
       let { data, error } = await supabase
         .from("applications")
-        .select("id, company, role, location, stage, match_score, deadline")
+        .select(applicationSelect)
         .order("created_at", { ascending: false });
       if (
         !error &&
@@ -170,7 +217,7 @@ export default function Home() {
               deadline: `2026-${application.date === "Aug 6" ? "08-06" : application.date === "Aug 9" ? "08-09" : application.date === "Aug 12" ? "08-12" : "08-15"}`,
             })),
           )
-          .select("id, company, role, location, stage, match_score, deadline");
+          .select(applicationSelect);
         data = seeded.data;
         error = seeded.error;
       }
@@ -262,8 +309,15 @@ export default function Home() {
         stage: String(data.get("stage") || "Saved"),
         match_score: Number(data.get("match_score") || 0),
         deadline: String(data.get("deadline") || "") || null,
+        source_url: String(data.get("source_url") || "") || null,
+        resume_item_id: String(data.get("resume_item_id") || "") || null,
+        salary: String(data.get("salary") || ""),
+        referral: String(data.get("referral") || ""),
+        recruiter: String(data.get("recruiter") || ""),
+        cover_letter: String(data.get("cover_letter") || ""),
+        notes: String(data.get("notes") || ""),
       })
-      .select("id, company, role, location, stage, match_score, deadline")
+      .select(applicationSelect)
       .single();
     if (error || !created)
       return notify(error?.message || "Could not save application");
@@ -441,12 +495,19 @@ export default function Home() {
       stage: String(form.get("stage") || "Saved"),
       match_score: Number(form.get("match_score") || 0),
       deadline: String(form.get("deadline") || "") || null,
+      source_url: String(form.get("source_url") || "") || null,
+      resume_item_id: String(form.get("resume_item_id") || "") || null,
+      salary: String(form.get("salary") || ""),
+      referral: String(form.get("referral") || ""),
+      recruiter: String(form.get("recruiter") || ""),
+      cover_letter: String(form.get("cover_letter") || ""),
+      notes: String(form.get("notes") || ""),
     };
     const { data, error } = await createClient()
       .from("applications")
       .update(changes)
       .eq("id", selectedApplication.id)
-      .select("id, company, role, location, stage, match_score, deadline")
+      .select(applicationSelect)
       .single();
     if (error || !data)
       return notify(error?.message || "Could not update application");
@@ -916,7 +977,10 @@ export default function Home() {
             applications={storedApplications}
             items={workspaceItems}
             query={query}
-            onAddApplication={(seed) => { setApplicationSeed(seed || {}); setShowModal(true); }}
+            onAddApplication={(seed) => {
+              setApplicationSeed(seed || {});
+              setShowModal(true);
+            }}
             onSelectApplication={(application) =>
               setSelectedApplication(application as Application)
             }
@@ -966,7 +1030,11 @@ export default function Home() {
               </label>
               <label>
                 Location
-                <input name="location" placeholder="e.g. Bengaluru · Hybrid" />
+                <input
+                  name="location"
+                  defaultValue={applicationSeed.location}
+                  placeholder="e.g. Bengaluru · Hybrid"
+                />
               </label>
               <label>
                 Stage
@@ -983,7 +1051,29 @@ export default function Home() {
                 Deadline
                 <input name="deadline" type="date" />
               </label>
-              <input type="hidden" name="match_score" value={applicationSeed.match || 0} />
+              <input
+                type="hidden"
+                name="match_score"
+                value={applicationSeed.match || 0}
+              />
+              <input
+                type="hidden"
+                name="source_url"
+                value={applicationSeed.sourceUrl || ""}
+              />
+              <label>
+                Resume version
+                <select name="resume_item_id" defaultValue="">
+                  <option value="">Not selected</option>
+                  {workspaceItems
+                    .filter((item) => item.kind === "resume")
+                    .map((resume) => (
+                      <option value={resume.id} key={resume.id}>
+                        {resume.title}
+                      </option>
+                    ))}
+                </select>
+              </label>
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(false)}>
                   Cancel
@@ -1136,8 +1226,95 @@ export default function Home() {
               </label>
               <label>
                 Deadline
-                <input name="deadline" type="date" />
+                <input
+                  name="deadline"
+                  type="date"
+                  defaultValue={selectedApplication.deadline || ""}
+                />
               </label>
+              <label>
+                Resume used
+                <select
+                  name="resume_item_id"
+                  defaultValue={selectedApplication.resumeItemId}
+                >
+                  <option value="">Not selected</option>
+                  {workspaceItems
+                    .filter((item) => item.kind === "resume")
+                    .map((resume) => (
+                      <option value={resume.id} key={resume.id}>
+                        {resume.title}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label>
+                Salary / compensation
+                <input
+                  name="salary"
+                  defaultValue={selectedApplication.salary}
+                  placeholder="e.g. ₹18 LPA"
+                />
+              </label>
+              <label>
+                Referral
+                <input
+                  name="referral"
+                  defaultValue={selectedApplication.referral}
+                  placeholder="Name, status, or context"
+                />
+              </label>
+              <label>
+                Recruiter
+                <input
+                  name="recruiter"
+                  defaultValue={selectedApplication.recruiter}
+                  placeholder="Recruiter name and contact"
+                />
+              </label>
+              <label>
+                Cover letter
+                <textarea
+                  name="cover_letter"
+                  defaultValue={selectedApplication.coverLetter}
+                  placeholder="Tailored letter or key points"
+                />
+              </label>
+              <label>
+                Notes
+                <textarea
+                  name="notes"
+                  defaultValue={selectedApplication.notes}
+                  placeholder="Follow-ups, questions, feedback"
+                />
+              </label>
+              <label>
+                Source URL
+                <input
+                  name="source_url"
+                  type="url"
+                  defaultValue={selectedApplication.sourceUrl}
+                  placeholder="https://…"
+                />
+              </label>
+              {selectedApplication.timeline.length > 0 && (
+                <div className="application-timeline">
+                  <strong>Status timeline</strong>
+                  {[...selectedApplication.timeline]
+                    .reverse()
+                    .map((event, index) => (
+                      <div key={`${event.at}-${index}`}>
+                        <i />
+                        <span>
+                          <b>{event.stage}</b>
+                          <small>
+                            {new Date(event.at).toLocaleString()} · {event.note}
+                          </small>
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              )}
               <div className="modal-actions split-actions">
                 <button
                   type="button"
