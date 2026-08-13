@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { WorkspaceItem, WorkspaceView } from "./workspaces";
+import { AIHub } from "./ai-hub";
 import "./dashboard.css";
 
 type Application = {
@@ -523,20 +524,24 @@ export default function Home() {
             </button>
           ))}
           <p className="nav-label tools-label">Your tools</p>
-          {["Resume Lab", "Interview Prep", "Documents", "Analytics"].map(
-            (item, index) => (
-              <button
-                key={item}
-                className={active === item ? "active" : ""}
-                onClick={() => setActive(item)}
-              >
-                <span className="nav-icon" aria-hidden="true">
-                  {["▤", "✦", "□", "↗"][index]}
-                </span>
-                {item}
-              </button>
-            ),
-          )}
+          {[
+            "Resume Lab",
+            "AI Match",
+            "Interview Prep",
+            "Documents",
+            "Analytics",
+          ].map((item, index) => (
+            <button
+              key={item}
+              className={active === item ? "active" : ""}
+              onClick={() => setActive(item)}
+            >
+              <span className="nav-icon" aria-hidden="true">
+                {["▤", "AI", "✦", "□", "↗"][index]}
+              </span>
+              {item}
+            </button>
+          ))}
         </nav>
         <div className="coach-card">
           <div className="coach-orb">✦</div>
@@ -897,6 +902,8 @@ export default function Home() {
               </aside>
             </section>
           </div>
+        ) : active === "AI Match" ? (
+          <AIHub items={workspaceItems} notify={notify} />
         ) : (
           <WorkspaceView
             active={active}

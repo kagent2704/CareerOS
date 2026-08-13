@@ -1112,6 +1112,350 @@
   color: #aaa;
   cursor: pointer;
 }
+.ai-layout {
+  display: grid;
+  grid-template-columns: minmax(290px, 0.72fr) minmax(0, 1.45fr);
+  gap: 16px;
+  align-items: start;
+}
+.ai-input {
+  position: sticky;
+  top: 90px;
+}
+.ai-input > p {
+  margin: -10px 0 18px;
+  color: #7b7e76;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.ai-input form,
+.ai-input label {
+  display: flex;
+  flex-direction: column;
+}
+.ai-input form {
+  gap: 14px;
+}
+.ai-input label {
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 750;
+}
+.ai-input select,
+.ai-input textarea {
+  border: 1px solid #ddd9cf;
+  border-radius: 8px;
+  background: #fff;
+  padding: 11px;
+  font: inherit;
+}
+.ai-input textarea {
+  min-height: 210px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.ai-input form > small {
+  color: #8a8d85;
+  font-size: 8px;
+  line-height: 1.5;
+}
+.ai-submit {
+  border: 0;
+  border-radius: 8px;
+  background: #242621;
+  color: #fff;
+  padding: 12px;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.ai-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.ai-empty {
+  border: 1px dashed #d9d5cb;
+  border-radius: 10px;
+  padding: 18px;
+  background: #faf9f5;
+}
+.ai-empty strong {
+  font-size: 10px;
+}
+.ai-empty p {
+  margin: 5px 0 0;
+}
+.analysis-history {
+  margin-top: 24px;
+  border-top: 1px solid #ece9e2;
+  padding-top: 16px;
+}
+.analysis-history h3 {
+  margin: 0 0 9px;
+  font:
+    600 14px Georgia,
+    serif;
+}
+.analysis-history > button {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  padding: 9px;
+  text-align: left;
+  cursor: pointer;
+}
+.analysis-history > button:hover,
+.analysis-history > button.selected {
+  background: #f2f0ea;
+}
+.analysis-history button span {
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.analysis-history button small,
+.analysis-history > p {
+  color: #93958e;
+  font-size: 7px;
+}
+.ai-report {
+  display: grid;
+  gap: 14px;
+}
+.ai-hero {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  border-radius: 14px;
+  padding: 24px;
+  background: #282a25;
+  color: #fff;
+}
+.score-ring {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex: 0 0 112px;
+  height: 112px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 10px #ffffff18;
+  background: conic-gradient(#ed7049 calc(var(--score, 75) * 1%), #ffffff18 0);
+}
+.score-ring strong {
+  align-self: center;
+  margin-right: 2px;
+  font:
+    500 39px Georgia,
+    serif;
+}
+.score-ring span {
+  align-self: center;
+  color: #aaa;
+  font-size: 9px;
+}
+.ai-hero small {
+  color: #ed8b69;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ai-hero h2 {
+  margin: 6px 0;
+  font:
+    500 26px Georgia,
+    serif;
+}
+.ai-hero p {
+  margin: 0;
+  color: #aeb1a8;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.score-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  border-top: 1px solid #ece9e2;
+  padding: 12px 0;
+}
+.score-row div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.score-row strong {
+  font-size: 9px;
+}
+.score-row span {
+  color: #83867e;
+  font-size: 8px;
+  line-height: 1.45;
+}
+.score-row > b {
+  font:
+    600 15px Georgia,
+    serif;
+}
+.ai-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.list-card ul {
+  margin: 0;
+  padding-left: 16px;
+}
+.list-card li {
+  margin: 8px 0;
+  color: #62655e;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.list-card.positive {
+  border-top: 3px solid #4c9870;
+}
+.list-card.warning {
+  border-top: 3px solid #df8a4b;
+}
+.list-card.neutral {
+  border-top: 3px solid #557bb8;
+}
+.requirement {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 10px;
+  align-items: start;
+  border-top: 1px solid #ece9e2;
+  padding: 11px 0;
+}
+.requirement i {
+  border-radius: 9px;
+  padding: 4px 6px;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+.requirement i.met {
+  background: #eaf6ee;
+  color: #347653;
+}
+.requirement i.partial,
+.requirement i.unclear {
+  background: #fff3df;
+  color: #96621d;
+}
+.requirement i.missing {
+  background: #fff0ed;
+  color: #ae4c37;
+}
+.requirement div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.requirement strong {
+  font-size: 9px;
+}
+.requirement span {
+  color: #7d8078;
+  font-size: 8px;
+  line-height: 1.45;
+}
+.resume-change {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 11px;
+  border-top: 1px solid #ece9e2;
+  padding: 12px 0;
+}
+.resume-change > i {
+  align-self: start;
+  border-radius: 8px;
+  background: #f0efea;
+  padding: 4px;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+.resume-change strong {
+  font-size: 9px;
+}
+.resume-change p {
+  margin: 4px 0;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.resume-change small {
+  color: #85887f;
+  font-size: 8px;
+  line-height: 1.4;
+}
+.recommendation {
+  border: 1px solid #d7e3d0;
+  border-radius: 13px;
+  background: #eef4e9;
+  padding: 21px;
+}
+.recommendation small {
+  color: #56805d;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.recommendation p {
+  margin: 8px 0;
+  font:
+    500 17px/1.45 Georgia,
+    serif;
+}
+.recommendation span {
+  color: #727a6e;
+  font-size: 8px;
+  line-height: 1.45;
+}
+.ai-placeholder {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (max-width: 1000px) {
+  .ai-layout {
+    grid-template-columns: 1fr;
+  }
+  .ai-input {
+    position: static;
+  }
+  .ai-two {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .ai-hero {
+    align-items: flex-start;
+  }
+  .score-ring {
+    flex-basis: 82px;
+    height: 82px;
+  }
+  .score-ring strong {
+    font-size: 29px;
+  }
+  .ai-hero h2 {
+    font-size: 21px;
+  }
+}
 .modal input:disabled {
   background: #f1efe9;
   color: #85877f;

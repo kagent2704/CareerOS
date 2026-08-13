@@ -115,6 +115,11 @@ Every navigation item opens a dedicated workspace:
 - **Interview Prep** uploads private prep material and question-bank documents in PDF, Word, text, PNG, or JPG formats.
 - **Documents** uploads private certificates, offer letters, marksheets, portfolio files, and other career documents.
 - **Analytics** calculates stage distribution and conversion rates from your real applications.
+- **AI Match** compares a selected uploaded resume with a pasted job description. It produces a transparent 100-point recruiter rubric, evidence-backed strengths and gaps, mandatory-requirement coverage, likely recruiter objections, truthful resume changes, and interview-preparation priorities. Reports are stored privately in the signed-in account.
+
+### Configure CareerOS AI
+
+The AI feature runs only on the server. Add `OPENAI_API_KEY` to Vercel for Production and Preview, and optionally set `OPENAI_MODEL` (the default is `gpt-5-mini`). Never prefix the API key with `NEXT_PUBLIC_` or expose it in browser code.
 
 Workspace records are private to the signed-in account and persist in Supabase after the production database migration has been applied.
 
