@@ -1169,6 +1169,68 @@
   font-weight: 750;
   cursor: pointer;
 }
+
+.profile-submit {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d9d3c9;
+  border-radius: 10px;
+  background: #fff;
+  color: #272b24;
+  font-weight: 700;
+}
+
+.candidate-profile {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #eef6ef;
+  border: 1px solid #cfe3d2;
+}
+
+.candidate-profile small { color: #36804b; font-weight: 800; letter-spacing: .08em; }
+.candidate-profile strong { font-family: Georgia, serif; font-size: 20px; }
+.candidate-profile p, .candidate-profile span { margin: 0; color: #697066; line-height: 1.45; }
+.candidate-profile div { font-weight: 700; }
+
+.feed-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 18px;
+  color: #71756d;
+  font-size: 13px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3c9b5f;
+  box-shadow: 0 0 0 4px #3c9b5f20;
+}
+
+.job-actions a.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.mailbox-connection, .mail-event { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.mailbox-connection { margin-bottom: 18px; }
+.mailbox-connection h2 { margin: 6px 0; }
+.mailbox-connection p { margin: 0; color: #747970; }
+.mail-connect { padding: 12px 16px; border-radius: 10px; background: #22261f; color: white; text-decoration: none; font-weight: 750; white-space: nowrap; }
+.mail-event { padding: 17px 0; border-top: 1px solid #ece8df; }
+.mail-event > div:first-child { display: grid; gap: 5px; }
+.mail-event small { color: #e76645; text-transform: uppercase; font-weight: 800; }
+.mail-event span { color: #797e76; }
+.mail-event button { margin-left: 8px; }
+@media (max-width: 700px) { .mailbox-connection, .mail-event { align-items: flex-start; flex-direction: column; } }
 .ai-submit:disabled {
   opacity: 0.65;
   cursor: wait;

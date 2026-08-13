@@ -39,6 +39,14 @@ type Analysis = {
   result: MatchResult;
   created_at: string;
 };
+type CandidateProfile = {
+  headline: string;
+  seniority: string;
+  skills: string[];
+  target_roles: string[];
+  experience_summary: string;
+  confidence_note: string;
+};
 
 export function AIHub({
   items,
@@ -55,6 +63,8 @@ export function AIHub({
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<Analysis[]>([]);
   const [selected, setSelected] = useState<Analysis | null>(null);
+  const [profile, setProfile] = useState<CandidateProfile | null>(null);
+  const [profiling, setProfiling] = useState(false);
   useEffect(() => {
     createClient()
       .from("ai_analyses")
@@ -68,7 +78,25 @@ export function AIHub({
           setSelected((data[0] as Analysis) || null);
         }
       });
+    createClient()
+      .from("ai_analyses")
+      .select("result")
+      .eq("analysis_type", "resume_profile")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => setProfile((data?.result as CandidateProfile) || null));
   }, []);
+  async function buildProfile() {
+    if (!resumeId) return notify("Select a resume first");
+    setProfiling(true);
+    const response = await fetch("/api/ai/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ resumeItemId: resumeId }) });
+    const payload = await response.json();
+    setProfiling(false);
+    if (!response.ok) return notify(payload.error || "Could not build profile");
+    setProfile(payload.profile.result as CandidateProfile);
+    notify("Candidate profile updated from your resume");
+  }
   async function analyze(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
@@ -136,6 +164,9 @@ export function AIHub({
                 CareerOS never invents experience. Suggestions must remain
                 supported by your resume.
               </small>
+              <button type="button" className="profile-submit" disabled={profiling || !resumeId} onClick={buildProfile}>
+                {profiling ? "Reading resume…" : profile ? "Refresh job-board profile" : "Build my job-board profile"}
+              </button>
               <button className="ai-submit" disabled={loading}>
                 {loading ? "Thinking like a recruiter…" : "Analyze my fit"}
               </button>
@@ -147,6 +178,15 @@ export function AIHub({
                 Use Resume Lab to upload the PDF or Word file you want CareerOS
                 to analyze.
               </p>
+            </div>
+          )}
+          {profile && (
+            <div className="candidate-profile">
+              <small>ACTIVE CANDIDATE PROFILE</small>
+              <strong>{profile.headline}</strong>
+              <p>{profile.experience_summary}</p>
+              <div>{profile.target_roles.join(" · ")}</div>
+              <span>{profile.skills.slice(0, 10).join(", ")}</span>
             </div>
           )}
           <div className="analysis-history">

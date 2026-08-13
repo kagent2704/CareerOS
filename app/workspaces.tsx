@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export type WorkspaceItem = {
   id: string;
@@ -839,7 +839,7 @@ function DomainForm({
   );
 }
 
-const curatedJobs = [
+const fallbackJobs = [
   {
     id: "j1",
     company: "Atlassian",
@@ -922,6 +922,13 @@ const curatedJobs = [
   },
 ];
 
+type JobCard = (typeof fallbackJobs)[number] & {
+  description?: string;
+  url?: string;
+  updatedAt?: string;
+  source?: string;
+};
+
 function JobsBoard(props: Props) {
   const preference = props.items.find((item) => item.kind === "preference");
   const initial = (preference?.data || {}) as {
@@ -939,6 +946,25 @@ function JobsBoard(props: Props) {
     initial.modes || ["Remote", "Hybrid", "On-site"],
   );
   const [editing, setEditing] = useState(false);
+  const [liveJobs, setLiveJobs] = useState<JobCard[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
+  const [feedNote, setFeedNote] = useState("Loading direct employer feeds…");
+  const [personalized, setPersonalized] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ roles, locations });
+    fetch(`/api/jobs?${params}`, { signal: controller.signal })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not load live jobs");
+        setLiveJobs(payload.jobs || []);
+        setPersonalized(Boolean(payload.personalized));
+        setFeedNote(`${payload.jobs?.length || 0} current openings · refreshed ${new Date(payload.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
+      })
+      .catch((error) => { if (error.name !== "AbortError") setFeedNote(error.message); })
+      .finally(() => setLoadingJobs(false));
+    return () => controller.abort();
+  }, [locations, roles]);
   const roleTerms = roles
     .toLowerCase()
     .split(",")
@@ -949,7 +975,8 @@ function JobsBoard(props: Props) {
     .split(",")
     .map((v) => v.trim())
     .filter(Boolean);
-  const visible = curatedJobs
+  const catalog: JobCard[] = liveJobs.length ? liveJobs : loadingJobs ? [] : fallbackJobs;
+  const visible = catalog
     .filter(
       (job) =>
         (!roleTerms.length ||
@@ -983,7 +1010,7 @@ function JobsBoard(props: Props) {
       <div className="job-board-summary">
         <div>
           <strong>{visible.length}</strong>
-          <span>curated matches</span>
+          <span>{liveJobs.length ? "live matches" : "starter matches"}</span>
         </div>
         <p>
           Roles: {roles}
@@ -992,6 +1019,7 @@ function JobsBoard(props: Props) {
         </p>
         <button onClick={() => setEditing(true)}>Tune recommendations</button>
       </div>
+      <div className="feed-status"><span className={liveJobs.length ? "live-dot" : ""} />{feedNote}. Rankings use your preferences{personalized ? " and resume profile" : ""}.</div>
       <div className="job-board-grid">
         {visible.map((job) => (
           <article className="job-card" key={job.id}>
@@ -1009,6 +1037,7 @@ function JobsBoard(props: Props) {
               {job.location} · {job.mode}
             </p>
             <div className="skill-line">{job.skills}</div>
+            {job.updatedAt && <small>Updated {new Date(job.updatedAt).toLocaleDateString()} · {job.source}</small>}
             <div className="job-actions">
               <button
                 disabled={saved.has(job.id)}
@@ -1024,15 +1053,15 @@ function JobsBoard(props: Props) {
                       company: job.company,
                       skills: job.skills,
                       match: job.match,
+                      url: job.url || null,
+                      source: job.source || "CareerOS starter catalog",
                     },
                   })
                 }
               >
                 {saved.has(job.id) ? "Saved" : "Save"}
               </button>
-              <button className="primary" onClick={props.onAddApplication}>
-                Track application
-              </button>
+              {job.url ? <a className="primary" href={job.url} target="_blank" rel="noreferrer">View opening</a> : <button className="primary" onClick={props.onAddApplication}>Track application</button>}
             </div>
           </article>
         ))}

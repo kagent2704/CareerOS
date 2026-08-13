@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { WorkspaceItem, WorkspaceView } from "./workspaces";
 import { AIHub } from "./ai-hub";
+import { MailTracker } from "./mail-tracker";
 import "./dashboard.css";
 
 type Application = {
@@ -527,6 +528,7 @@ export default function Home() {
           {[
             "Resume Lab",
             "AI Match",
+            "Mail Tracker",
             "Interview Prep",
             "Documents",
             "Analytics",
@@ -904,6 +906,8 @@ export default function Home() {
           </div>
         ) : active === "AI Match" ? (
           <AIHub items={workspaceItems} notify={notify} />
+        ) : active === "Mail Tracker" ? (
+          <MailTracker notify={notify} />
         ) : (
           <WorkspaceView
             active={active}

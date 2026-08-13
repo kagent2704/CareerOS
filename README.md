@@ -107,7 +107,7 @@ The sidebar contains the following workspace areas:
 Every navigation item opens a dedicated workspace:
 
 - **Applications** provides a searchable list. Open a record to edit its company, role, location, stage, match score, or deadline, or delete it.
-- **Jobs** is a curated opportunity board ranked by your preferred roles, locations, and work modes. Save a role or move it into the application tracker.
+- **Jobs** loads current openings from public direct-employer Greenhouse feeds and ranks them by your preferred roles, locations, work modes, and latest AI resume profile. Every live card links to the employer's hosted posting and shows its source and update date. If feeds are unavailable, CareerOS labels and uses a small starter catalog instead of presenting it as live data.
 - **Companies** combines employers detected in applications with structured target-company research: industry, locations, website, career page, dream rating, priority, and notes.
 - **Interviews** provides a monthly calendar and agenda. Schedule individual rounds with company, role, date, time, format, meeting link, and preparation notes.
 - **Network** is a relationship CRM for recruiters, alumni, referrers, and hiring teams, including relationship stage, LinkedIn, email, follow-up date, and notes.
@@ -115,11 +115,26 @@ Every navigation item opens a dedicated workspace:
 - **Interview Prep** uploads private prep material and question-bank documents in PDF, Word, text, PNG, or JPG formats.
 - **Documents** uploads private certificates, offer letters, marksheets, portfolio files, and other career documents.
 - **Analytics** calculates stage distribution and conversion rates from your real applications.
-- **AI Match** compares a selected uploaded resume with a pasted job description. It produces a transparent 100-point recruiter rubric, evidence-backed strengths and gaps, mandatory-requirement coverage, likely recruiter objections, truthful resume changes, and interview-preparation priorities. Reports are stored privately in the signed-in account.
+- **AI Match** compares a selected uploaded resume with a pasted job description. It produces a transparent 100-point recruiter rubric, evidence-backed strengths and gaps, mandatory-requirement coverage, likely recruiter objections, truthful resume changes, and interview-preparation priorities. Select **Build my job-board profile** to extract an evidence-only reusable candidate profile and personalize live job ranking. Reports and profiles are stored privately in the signed-in account.
+- **Mail Tracker** can connect a separate Gmail OAuth grant using the metadata-only scope. It reads sender, subject, date, and labels—not message bodies or attachments—classifies likely applications, assessments, interviews, offers, rejections, and job alerts, and requires user review. Gmail is unavailable until the administrator completes the activation steps below.
 
 ### Configure CareerOS AI
 
 The AI feature runs only on the server. Add `OPENAI_API_KEY` to Vercel for Production and Preview, and optionally set `OPENAI_MODEL` (the default is `gpt-5-mini`). Never prefix the API key with `NEXT_PUBLIC_` or expose it in browser code.
+
+### Activate Gmail metadata tracking
+
+1. Apply `supabase/migrations/20260815100000_mailbox_connections.sql` in the Supabase SQL editor.
+2. In Google Cloud, enable the Gmail API and create a Web application OAuth client.
+3. Add `https://career-os-coral.vercel.app/api/mail/callback` as an authorized redirect URI.
+4. Configure the OAuth consent screen with `openid`, `email`, and `https://www.googleapis.com/auth/gmail.metadata`.
+5. In Vercel, add `GOOGLE_MAIL_CLIENT_ID`, `GOOGLE_MAIL_CLIENT_SECRET`, and a random `MAILBOX_ENCRYPTION_KEY` of at least 32 characters to Production and Preview, then redeploy.
+
+Refresh tokens are AES-256-GCM encrypted before storage. CareerOS intentionally does not request Gmail message-body or send-mail access.
+
+### Configure live job sources
+
+CareerOS works without a paid job API by using public employer-published Greenhouse feeds. Optionally set `GREENHOUSE_BOARDS` to comma-separated board tokens for target employers. For broader India-wide aggregation, an Adzuna or equivalent licensed API account is still required; CareerOS does not scrape LinkedIn or mislabel static data as current openings.
 
 Workspace records are private to the signed-in account and persist in Supabase after the production database migration has been applied.
 
