@@ -301,14 +301,81 @@ export default function Home() {
     return true;
   }
 
-  async function deleteWorkspaceItem(id: string) {
-    const { error } = await createClient()
+  async function deleteWorkspaceItem(item: WorkspaceItem) {
+    const supabase = createClient();
+    if (typeof item.data.file_path === "string") {
+      const { error: fileError } = await supabase.storage
+        .from("resumes")
+        .remove([item.data.file_path]);
+      if (fileError) return notify(fileError.message);
+    }
+    const { error } = await supabase
       .from("workspace_items")
       .delete()
-      .eq("id", id);
+      .eq("id", item.id);
     if (error) return notify(error.message);
-    setWorkspaceItems((current) => current.filter((item) => item.id !== id));
+    setWorkspaceItems((current) =>
+      current.filter((currentItem) => currentItem.id !== item.id),
+    );
     notify("Item deleted");
+  }
+
+  async function uploadResume(file: File, title: string, details: string) {
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      notify("Upload a PDF, DOC, or DOCX file");
+      return false;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      notify("Resume files must be 10 MB or smaller");
+      return false;
+    }
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      notify("Please sign in again");
+      return false;
+    }
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
+    const filePath = `${user.id}/${Date.now()}-${safeName}`;
+    const { error: uploadError } = await supabase.storage
+      .from("resumes")
+      .upload(filePath, file, { contentType: file.type, upsert: false });
+    if (uploadError) {
+      notify(uploadError.message);
+      return false;
+    }
+    const saved = await addWorkspaceItem({
+      kind: "resume",
+      title,
+      subtitle: details,
+      status: "Active",
+      due_date: null,
+      data: {
+        file_path: filePath,
+        file_name: file.name,
+        file_size: file.size,
+        mime_type: file.type,
+      },
+    });
+    if (!saved) await supabase.storage.from("resumes").remove([filePath]);
+    else notify("Resume uploaded securely");
+    return saved;
+  }
+
+  async function openWorkspaceItem(item: WorkspaceItem) {
+    if (typeof item.data.file_path !== "string") return;
+    const { data, error } = await createClient()
+      .storage.from("resumes")
+      .createSignedUrl(item.data.file_path, 60);
+    if (error || !data) return notify(error?.message || "Could not open file");
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
   async function updateApplication(e: React.FormEvent<HTMLFormElement>) {
@@ -794,6 +861,8 @@ export default function Home() {
             }
             onAddItem={addWorkspaceItem}
             onDeleteItem={deleteWorkspaceItem}
+            onUploadResume={uploadResume}
+            onOpenItem={openWorkspaceItem}
           />
         )}
       </section>

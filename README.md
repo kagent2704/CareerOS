@@ -111,7 +111,7 @@ Every navigation item opens a dedicated workspace:
 - **Companies** combines target-company records with companies detected in your applications.
 - **Interviews** tracks rounds, preparation deadlines, and outcomes.
 - **Network** stores recruiter, referral, and follow-up records.
-- **Resume Lab** catalogs targeted resume versions.
+- **Resume Lab** securely uploads private PDF, DOC, and DOCX resume versions up to 10 MB. Each card stores its target-role notes and opens the original file through a short-lived signed link.
 - **Interview Prep** stores reusable preparation sets and question-bank plans.
 - **Documents** catalogs career documents and their status.
 - **Analytics** calculates stage distribution and conversion rates from your real applications.

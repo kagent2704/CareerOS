@@ -30,7 +30,13 @@ type Props = {
   onAddApplication: () => void;
   onSelectApplication: (application: WorkspaceApplication) => void;
   onAddItem: (item: Omit<WorkspaceItem, "id">) => Promise<boolean>;
-  onDeleteItem: (id: string) => Promise<void>;
+  onDeleteItem: (item: WorkspaceItem) => Promise<void>;
+  onUploadResume: (
+    file: File,
+    title: string,
+    details: string,
+  ) => Promise<boolean>;
+  onOpenItem: (item: WorkspaceItem) => Promise<void>;
 };
 
 const moduleCopy: Record<
@@ -243,6 +249,14 @@ export function WorkspaceView(props: Props) {
               <small>{item.status}</small>
               <h3>{item.title}</h3>
               <p>{item.subtitle || "No additional details yet."}</p>
+              {typeof item.data.file_name === "string" && (
+                <button
+                  className="file-link"
+                  onClick={() => props.onOpenItem(item)}
+                >
+                  Open {item.data.file_name}
+                </button>
+              )}
               {item.due_date && (
                 <time>
                   Due{" "}
@@ -253,7 +267,7 @@ export function WorkspaceView(props: Props) {
             <button
               className="record-delete"
               aria-label={`Delete ${item.title}`}
-              onClick={() => props.onDeleteItem(item.id)}
+              onClick={() => props.onDeleteItem(item)}
             >
               ×
             </button>
@@ -287,6 +301,7 @@ export function WorkspaceView(props: Props) {
         <ItemModal
           config={config}
           onClose={() => setShowForm(false)}
+          onUploadResume={props.onUploadResume}
           onSubmit={async (item) => {
             if (await props.onAddItem(item)) setShowForm(false);
           }}
@@ -346,11 +361,19 @@ function ItemModal({
   config,
   onClose,
   onSubmit,
+  onUploadResume,
 }: {
   config: (typeof moduleCopy)[string];
   onClose: () => void;
   onSubmit: (item: Omit<WorkspaceItem, "id">) => Promise<void>;
+  onUploadResume: (
+    file: File,
+    title: string,
+    details: string,
+  ) => Promise<boolean>;
 }) {
+  const [uploading, setUploading] = useState(false);
+  const isResume = config.kind === "resume";
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
@@ -358,16 +381,31 @@ function ItemModal({
           ×
         </button>
         <span className="modal-kicker">{config.eyebrow}</span>
-        <h2>{config.add}</h2>
-        <p>Add it to your private CareerOS workspace.</p>
+        <h2>{isResume ? "Upload resume" : config.add}</h2>
+        <p>
+          {isResume
+            ? "Upload a private PDF, DOC, or DOCX file up to 10 MB."
+            : "Add it to your private CareerOS workspace."}
+        </p>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
             const form = new FormData(e.currentTarget);
+            const title = String(form.get("title") || "");
+            const details = String(form.get("subtitle") || "");
+            if (isResume) {
+              const file = form.get("file");
+              if (!(file instanceof File) || !file.size) return;
+              setUploading(true);
+              const saved = await onUploadResume(file, title, details);
+              setUploading(false);
+              if (saved) onClose();
+              return;
+            }
             await onSubmit({
               kind: config.kind,
-              title: String(form.get("title") || ""),
-              subtitle: String(form.get("subtitle") || ""),
+              title,
+              subtitle: details,
               status: String(form.get("status") || "Active"),
               due_date: String(form.get("due_date") || "") || null,
               data: {},
@@ -380,35 +418,61 @@ function ItemModal({
               name="title"
               required
               autoFocus
-              placeholder={`e.g. ${config.title === "Network" ? "Priya Sharma" : config.title === "Jobs" ? "Backend Engineer at Acme" : "My new item"}`}
+              placeholder={
+                isResume
+                  ? "e.g. Backend Resume v2"
+                  : `e.g. ${config.title === "Network" ? "Priya Sharma" : config.title === "Jobs" ? "Backend Engineer at Acme" : "My new item"}`
+              }
             />
           </label>
+          {isResume && (
+            <label>
+              Resume file
+              <input
+                name="file"
+                className="file-input"
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                required
+              />
+            </label>
+          )}
           <label>
             Details
             <input
               name="subtitle"
-              placeholder="Company, location, notes, or link"
+              placeholder={
+                isResume
+                  ? "Target role, keywords, or version notes"
+                  : "Company, location, notes, or link"
+              }
             />
           </label>
-          <label>
-            Status
-            <select name="status">
-              <option>Active</option>
-              <option>Priority</option>
-              <option>Waiting</option>
-              <option>Completed</option>
-              <option>Archived</option>
-            </select>
-          </label>
-          <label>
-            Due date
-            <input name="due_date" type="date" />
-          </label>
+          {!isResume && (
+            <>
+              <label>
+                Status
+                <select name="status">
+                  <option>Active</option>
+                  <option>Priority</option>
+                  <option>Waiting</option>
+                  <option>Completed</option>
+                  <option>Archived</option>
+                </select>
+              </label>
+              <label>
+                Due date
+                <input name="due_date" type="date" />
+              </label>
+            </>
+          )}
           <div className="modal-actions">
             <button type="button" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit">Save</button>
+            <button type="submit" disabled={uploading}>
+              {uploading ? "Uploading…" : isResume ? "Upload resume" : "Save"}
+            </button>
           </div>
         </form>
       </div>
