@@ -11,16 +11,23 @@ export async function updateSession(request: NextRequest) {
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet) => {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value),
+        );
         response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options),
+        );
       },
     },
   });
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth");
-  if (!user && !isAuthRoute) {
+  const isApiRoute = request.nextUrl.pathname.startsWith("/api/");
+  if (!user && !isAuthRoute && !isApiRoute) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = "/auth";
     return NextResponse.redirect(redirect);
