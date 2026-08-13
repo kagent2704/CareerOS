@@ -305,7 +305,7 @@ export default function Home() {
     const supabase = createClient();
     if (typeof item.data.file_path === "string") {
       const { error: fileError } = await supabase.storage
-        .from("resumes")
+        .from(String(item.data.bucket || "resumes"))
         .remove([item.data.file_path]);
       if (fileError) return notify(fileError.message);
     }
@@ -320,18 +320,34 @@ export default function Home() {
     notify("Item deleted");
   }
 
-  async function uploadResume(file: File, title: string, details: string) {
-    const allowedTypes = [
+  async function uploadWorkspaceFile(
+    kind: "resume" | "document" | "preparation",
+    file: File,
+    title: string,
+    details: string,
+  ) {
+    const resumeTypes = [
       "application/pdf",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
-    if (!allowedTypes.includes(file.type)) {
-      notify("Upload a PDF, DOC, or DOCX file");
+    const allowedTypes = [
+      ...resumeTypes,
+      "text/plain",
+      "image/png",
+      "image/jpeg",
+    ];
+    if (!(kind === "resume" ? resumeTypes : allowedTypes).includes(file.type)) {
+      notify(
+        kind === "resume"
+          ? "Upload a PDF, DOC, or DOCX file"
+          : "Upload a PDF, DOC, DOCX, TXT, PNG, or JPG file",
+      );
       return false;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      notify("Resume files must be 10 MB or smaller");
+    const maxSize = kind === "resume" ? 10 : 15;
+    if (file.size > maxSize * 1024 * 1024) {
+      notify(`Files must be ${maxSize} MB or smaller`);
       return false;
     }
     const supabase = createClient();
@@ -344,15 +360,16 @@ export default function Home() {
     }
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
     const filePath = `${user.id}/${Date.now()}-${safeName}`;
+    const bucket = kind === "resume" ? "resumes" : "career-files";
     const { error: uploadError } = await supabase.storage
-      .from("resumes")
+      .from(bucket)
       .upload(filePath, file, { contentType: file.type, upsert: false });
     if (uploadError) {
       notify(uploadError.message);
       return false;
     }
     const saved = await addWorkspaceItem({
-      kind: "resume",
+      kind,
       title,
       subtitle: details,
       status: "Active",
@@ -362,20 +379,51 @@ export default function Home() {
         file_name: file.name,
         file_size: file.size,
         mime_type: file.type,
+        bucket,
       },
     });
-    if (!saved) await supabase.storage.from("resumes").remove([filePath]);
-    else notify("Resume uploaded securely");
+    if (!saved) await supabase.storage.from(bucket).remove([filePath]);
+    else notify(`${kind === "resume" ? "Resume" : "File"} uploaded securely`);
     return saved;
   }
 
   async function openWorkspaceItem(item: WorkspaceItem) {
     if (typeof item.data.file_path !== "string") return;
     const { data, error } = await createClient()
-      .storage.from("resumes")
+      .storage.from(String(item.data.bucket || "resumes"))
       .createSignedUrl(item.data.file_path, 60);
     if (error || !data) return notify(error?.message || "Could not open file");
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  }
+
+  async function saveJobPreferences(data: Record<string, unknown>) {
+    const existing = workspaceItems.find((item) => item.kind === "preference");
+    if (!existing)
+      return addWorkspaceItem({
+        kind: "preference",
+        title: "Job preferences",
+        subtitle: "Curated job-board settings",
+        status: "Active",
+        due_date: null,
+        data,
+      });
+    const { data: updated, error } = await createClient()
+      .from("workspace_items")
+      .update({ data })
+      .eq("id", existing.id)
+      .select("id, kind, title, subtitle, status, due_date, data")
+      .single();
+    if (error || !updated) {
+      notify(error?.message || "Could not save preferences");
+      return false;
+    }
+    setWorkspaceItems((current) =>
+      current.map((item) =>
+        item.id === existing.id ? (updated as WorkspaceItem) : item,
+      ),
+    );
+    notify("Job-board preferences updated");
+    return true;
   }
 
   async function updateApplication(e: React.FormEvent<HTMLFormElement>) {
@@ -861,8 +909,9 @@ export default function Home() {
             }
             onAddItem={addWorkspaceItem}
             onDeleteItem={deleteWorkspaceItem}
-            onUploadResume={uploadResume}
+            onUploadFile={uploadWorkspaceFile}
             onOpenItem={openWorkspaceItem}
+            onSavePreferences={saveJobPreferences}
           />
         )}
       </section>

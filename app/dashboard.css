@@ -809,6 +809,8 @@
   border-radius: 16px;
   padding: 30px;
   box-shadow: 0 20px 70px #0005;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 .modal-close {
   position: absolute;
@@ -851,12 +853,264 @@
   gap: 6px;
 }
 .modal input,
-.modal select {
+.modal select,
+.modal textarea {
   border: 1px solid #ddd9cf;
   background: #fff;
   border-radius: 8px;
   padding: 11px 12px;
   font-size: 12px;
+}
+.modal textarea {
+  min-height: 78px;
+  resize: vertical;
+  font-family: inherit;
+}
+.domain-modal,
+.preferences-modal {
+  width: min(650px, 100%);
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.modal fieldset {
+  border: 1px solid #ddd9cf;
+  border-radius: 9px;
+  padding: 12px;
+}
+.modal legend {
+  padding: 0 5px;
+  font-size: 9px;
+  font-weight: 800;
+}
+.check-grid {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.check-grid label {
+  flex-direction: row !important;
+  align-items: center;
+  font-weight: 500 !important;
+}
+.check-grid input {
+  width: 16px;
+  height: 16px;
+}
+.job-board-summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  border: 1px solid #e0ddd4;
+  border-radius: 12px;
+  background: #fff;
+}
+.job-board-summary div {
+  display: flex;
+  flex-direction: column;
+}
+.job-board-summary strong {
+  font:
+    500 28px Georgia,
+    serif;
+}
+.job-board-summary span,
+.job-board-summary p {
+  color: #74776f;
+  font-size: 9px;
+  line-height: 1.6;
+}
+.job-board-summary p {
+  margin: 0;
+}
+.job-board-summary button {
+  border: 1px solid #d8d4ca;
+  border-radius: 8px;
+  background: #faf9f5;
+  padding: 9px 12px;
+  font-size: 9px;
+  cursor: pointer;
+}
+.job-board-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.job-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 245px;
+  border: 1px solid #dfdcd3;
+  border-radius: 13px;
+  background: #fff;
+  padding: 18px;
+}
+.job-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 13px;
+}
+.match-badge {
+  border-radius: 12px;
+  background: #eaf6ee;
+  color: #347653;
+  padding: 5px 8px;
+  font-size: 8px;
+  font-weight: 750;
+}
+.job-card > small {
+  color: #898b84;
+  font-size: 8px;
+}
+.job-card h2 {
+  margin: 6px 0;
+  font:
+    600 17px Georgia,
+    serif;
+}
+.job-card p {
+  margin: 0;
+  color: #5f625b;
+  font-size: 9px;
+}
+.skill-line {
+  margin-top: 13px;
+  color: #777a72;
+  font-size: 8px;
+  line-height: 1.5;
+}
+.job-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+.job-actions button {
+  flex: 1;
+  border: 1px solid #d9d5cb;
+  border-radius: 7px;
+  background: #fff;
+  padding: 9px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.job-actions button.primary {
+  background: #252722;
+  color: #fff;
+  border-color: #252722;
+}
+.job-actions button:disabled {
+  color: #588267;
+  background: #edf6ef;
+  cursor: default;
+}
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.75fr);
+  gap: 15px;
+}
+.calendar-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.calendar-title h2 {
+  margin: 0;
+}
+.calendar-title span {
+  color: #888b83;
+  font-size: 9px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.calendar-grid > b {
+  padding: 8px;
+  color: #92948d;
+  font-size: 8px;
+  text-align: center;
+}
+.calendar-grid > i,
+.calendar-grid > button {
+  min-height: 84px;
+  border: 0;
+  border-top: 1px solid #ebe8e0;
+  border-left: 1px solid #ebe8e0;
+  background: #fff;
+  padding: 8px;
+  text-align: left;
+}
+.calendar-grid > button {
+  cursor: pointer;
+}
+.calendar-grid > button:hover {
+  background: #faf9f5;
+}
+.calendar-grid button > span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 9px;
+}
+.calendar-grid button.today > span {
+  background: #ef704a;
+  color: white;
+}
+.calendar-grid button.has-event {
+  background: #fff8f4;
+}
+.calendar-grid button small {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  color: #b65333;
+  font-size: 7px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agenda > article {
+  display: grid;
+  grid-template-columns: 42px 1fr 20px;
+  gap: 10px;
+  align-items: start;
+  border-top: 1px solid #ece9e2;
+  padding: 13px 0;
+}
+.agenda time {
+  color: #e16640;
+  font-size: 9px;
+  font-weight: 800;
+}
+.agenda article div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.agenda article strong {
+  font-size: 9px;
+}
+.agenda article span,
+.agenda article small {
+  color: #777a72;
+  font-size: 8px;
+}
+.agenda article > button {
+  border: 0;
+  background: transparent;
+  color: #aaa;
+  cursor: pointer;
 }
 .modal input:disabled {
   background: #f1efe9;
@@ -1495,5 +1749,35 @@
   }
   .workspace-stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 1000px) {
+  .job-board-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .job-board-summary {
+    grid-template-columns: auto 1fr;
+  }
+  .job-board-summary button {
+    grid-column: 1/-1;
+  }
+  .job-board-grid {
+    grid-template-columns: 1fr;
+  }
+  .calendar-grid > i,
+  .calendar-grid > button {
+    min-height: 62px;
+    padding: 5px;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal {
+    padding: 24px 20px;
   }
 }

@@ -107,13 +107,13 @@ The sidebar contains the following workspace areas:
 Every navigation item opens a dedicated workspace:
 
 - **Applications** provides a searchable list. Open a record to edit its company, role, location, stage, match score, or deadline, or delete it.
-- **Jobs** stores opportunities before you apply.
-- **Companies** combines target-company records with companies detected in your applications.
-- **Interviews** tracks rounds, preparation deadlines, and outcomes.
-- **Network** stores recruiter, referral, and follow-up records.
+- **Jobs** is a curated opportunity board ranked by your preferred roles, locations, and work modes. Save a role or move it into the application tracker.
+- **Companies** combines employers detected in applications with structured target-company research: industry, locations, website, career page, dream rating, priority, and notes.
+- **Interviews** provides a monthly calendar and agenda. Schedule individual rounds with company, role, date, time, format, meeting link, and preparation notes.
+- **Network** is a relationship CRM for recruiters, alumni, referrers, and hiring teams, including relationship stage, LinkedIn, email, follow-up date, and notes.
 - **Resume Lab** securely uploads private PDF, DOC, and DOCX resume versions up to 10 MB. Each card stores its target-role notes and opens the original file through a short-lived signed link.
-- **Interview Prep** stores reusable preparation sets and question-bank plans.
-- **Documents** catalogs career documents and their status.
+- **Interview Prep** uploads private prep material and question-bank documents in PDF, Word, text, PNG, or JPG formats.
+- **Documents** uploads private certificates, offer letters, marksheets, portfolio files, and other career documents.
 - **Analytics** calculates stage distribution and conversion rates from your real applications.
 
 Workspace records are private to the signed-in account and persist in Supabase after the production database migration has been applied.
