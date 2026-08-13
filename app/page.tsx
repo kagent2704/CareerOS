@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { WorkspaceItem, WorkspaceView } from "./workspaces";
 import { AIHub } from "./ai-hub";
+import { AIStudio } from "./ai-studio";
 import { MailTracker } from "./mail-tracker";
 import "./dashboard.css";
 
@@ -643,6 +644,7 @@ export default function Home() {
           {[
             "Resume Lab",
             "AI Match",
+            "AI Studio",
             "Mail Tracker",
             "Interview Prep",
             "Documents",
@@ -1021,6 +1023,12 @@ export default function Home() {
           </div>
         ) : active === "AI Match" ? (
           <AIHub items={workspaceItems} notify={notify} />
+        ) : active === "AI Studio" ? (
+          <AIStudio
+            items={workspaceItems}
+            notify={notify}
+            onAddItem={addWorkspaceItem}
+          />
         ) : active === "Mail Tracker" ? (
           <MailTracker notify={notify} onAddItem={addWorkspaceItem} />
         ) : (
