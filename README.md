@@ -85,11 +85,9 @@ Use the search field at the top of the dashboard to filter recent applications b
 
 Clear the search field to restore the complete list.
 
-## 7. Manage today’s focus
+## 7. Manage your workspace
 
-Select the circle beside a task to mark it complete. Completed tasks are crossed out visually.
-
-> Current limitation: task completion is session-only and resets after a page refresh.
+Use **Career Coach** to generate a focused three-step plan from your current pipeline. Notifications and the calendar collect dated applications and workspace records into one actionable list.
 
 ## 8. Navigate CareerOS
 
@@ -106,7 +104,19 @@ The sidebar contains the following workspace areas:
 - Documents
 - Analytics
 
-The current release provides the complete Overview experience. Other navigation items display interaction feedback while their dedicated workspaces are being developed.
+Every navigation item opens a dedicated workspace:
+
+- **Applications** provides a searchable list. Open a record to edit its company, role, location, stage, match score, or deadline, or delete it.
+- **Jobs** stores opportunities before you apply.
+- **Companies** combines target-company records with companies detected in your applications.
+- **Interviews** tracks rounds, preparation deadlines, and outcomes.
+- **Network** stores recruiter, referral, and follow-up records.
+- **Resume Lab** catalogs targeted resume versions.
+- **Interview Prep** stores reusable preparation sets and question-bank plans.
+- **Documents** catalogs career documents and their status.
+- **Analytics** calculates stage distribution and conversion rates from your real applications.
+
+Workspace records are private to the signed-in account and persist in Supabase after the production database migration has been applied.
 
 ## 9. Troubleshooting
 
