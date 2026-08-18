@@ -122,7 +122,7 @@ Every navigation item opens a dedicated workspace:
 
 ### Configure CareerOS AI
 
-The AI feature runs only on the server. Add `OPENAI_API_KEY` to Vercel for Production and Preview, and optionally set `OPENAI_MODEL` (the default is `gpt-5-mini`). Never prefix the API key with `NEXT_PUBLIC_` or expose it in browser code.
+The AI feature runs only on the server through the Gemini API. Add `GEMINI_API_KEY` to Vercel for Production and Preview, and optionally set `GEMINI_MODEL` (the default is `gemini-3.6-flash`). Never prefix the API key with `NEXT_PUBLIC_` or expose it in browser code.
 
 ### Activate Gmail metadata tracking
 
