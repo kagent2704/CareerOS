@@ -124,6 +124,8 @@ Every navigation item opens a dedicated workspace:
 
 The AI feature runs only on the server through the Gemini API. Add `GEMINI_API_KEY` to Vercel for Production and Preview, and optionally set `GEMINI_MODEL` (the default is `gemini-3.6-flash`). Never prefix the API key with `NEXT_PUBLIC_` or expose it in browser code.
 
+AI Match reports include a persistent, analysis-aware conversation. Follow-up questions automatically include the selected resume, job description, original recruiter report, and the last 20 messages. Run `supabase/migrations/20260818170000_enable_ai_conversations.sql` once to allow account-scoped conversation updates.
+
 ### Activate Gmail metadata tracking
 
 1. Apply `supabase/migrations/20260815100000_mailbox_connections.sql` in the Supabase SQL editor.

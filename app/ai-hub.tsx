@@ -32,6 +32,12 @@ type MatchResult = {
   interview_preparation: string[];
   application_recommendation: string;
   integrity_note: string;
+  conversation?: ChatMessage[];
+};
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
 };
 type Analysis = {
   id: string;
@@ -65,6 +71,8 @@ export function AIHub({
   const [selected, setSelected] = useState<Analysis | null>(null);
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [profiling, setProfiling] = useState(false);
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatting, setChatting] = useState(false);
   useEffect(() => {
     createClient()
       .from("ai_analyses")
@@ -112,6 +120,32 @@ export function AIHub({
     setHistory((current) => [analysis, ...current]);
     setSelected(analysis);
     notify("Recruiter analysis completed");
+  }
+  async function chat(event: React.FormEvent) {
+    event.preventDefault();
+    if (!selected || !chatMessage.trim()) return;
+    const outgoing = chatMessage.trim();
+    setChatMessage("");
+    setChatting(true);
+    const response = await fetch("/api/ai/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ analysisId: selected.id, message: outgoing }),
+    });
+    const payload = await response.json();
+    setChatting(false);
+    if (!response.ok) {
+      setChatMessage(outgoing);
+      return notify(payload.error || "Could not continue the conversation");
+    }
+    const updated = {
+      ...selected,
+      result: { ...selected.result, conversation: payload.conversation },
+    };
+    setSelected(updated);
+    setHistory((current) =>
+      current.map((analysis) => (analysis.id === updated.id ? updated : analysis)),
+    );
   }
   const result = selected?.result;
   return (
@@ -226,6 +260,56 @@ export function AIHub({
                     {result.job.company} · {result.job.summary}
                   </p>
                 </div>
+              </article>
+              <article className="workspace-card analysis-chat">
+                <div className="analysis-chat-heading">
+                  <div>
+                    <small>CONTEXT-AWARE FOLLOW-UP</small>
+                    <h2>Ask CareerOS about this match</h2>
+                  </div>
+                  <span>Resume + job description + report included</span>
+                </div>
+                <div className="analysis-chat-thread" aria-live="polite">
+                  {!result.conversation?.length && (
+                    <div className="chat-intro">
+                      Ask why you lost points, share relevant context, request a
+                      stronger resume bullet, or practice a recruiter objection.
+                    </div>
+                  )}
+                  {result.conversation?.map((entry, index) => (
+                    <div
+                      className={`chat-message ${entry.role}`}
+                      key={`${entry.created_at}-${index}`}
+                    >
+                      <small>{entry.role === "user" ? "You" : "CareerOS"}</small>
+                      <p>{entry.content}</p>
+                    </div>
+                  ))}
+                  {chatting && (
+                    <div className="chat-message assistant pending">
+                      <small>CareerOS</small>
+                      <p>Reviewing the evidence and your context…</p>
+                    </div>
+                  )}
+                </div>
+                <form className="analysis-chat-form" onSubmit={chat}>
+                  <textarea
+                    aria-label="Give CareerOS more context or ask a follow-up"
+                    maxLength={4000}
+                    placeholder="Add context or ask a follow-up… e.g. I led client onboarding in my internship—does that change your assessment?"
+                    value={chatMessage}
+                    onChange={(event) => setChatMessage(event.target.value)}
+                  />
+                  <div>
+                    <small>
+                      New details are treated as user-provided context until your
+                      resume supports them.
+                    </small>
+                    <button disabled={chatting || !chatMessage.trim()}>
+                      {chatting ? "Thinking…" : "Send"}
+                    </button>
+                  </div>
+                </form>
               </article>
               <article className="workspace-card">
                 <h2>Transparent score</h2>
