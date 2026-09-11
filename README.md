@@ -57,6 +57,13 @@ Your private career profile can also store university, graduation year, CGPA, sk
 
 The **Overview** page summarizes your job search:
 
+- **Applications submitted** counts each application that reached submission once.
+- **OAs attempted** counts completed online assessments recorded in the application journey.
+- **Interviews attended** counts completed interview rounds, including multiple rounds for one application.
+- **Offers received** counts applications that reached an offer.
+
+These totals are cumulative. A later rejection does not remove an earlier assessment or interview from the Overview.
+
 - **Applications sent** — total applications represented in the current dashboard.
 - **In progress** — applications that are still active.
 - **Response rate** — the displayed response percentage.

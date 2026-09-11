@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   mergeRecordedMilestone,
   shouldAdvanceCurrentStage,
+  applicationReachedStage,
+  calculateLifecycleMetrics,
 } from "./application-lifecycle";
 
 const applied = {
@@ -55,5 +57,48 @@ describe("application lifecycle", () => {
         "2026-09-11T10:00:00.000Z",
       ),
     ).toBe(true);
+  });
+
+  it("counts completed activity even after the final outcome changes", () => {
+    const rejectedJourney = {
+      stage: "Rejected",
+      timeline: [
+        applied,
+        oaCompleted,
+        {
+          stage: "Interview",
+          event: "Interview completed",
+          at: "2026-09-07T10:00:00.000Z",
+          note: "Hiring manager round",
+        },
+        {
+          stage: "Rejected",
+          event: "Application rejected",
+          at: "2026-09-10T10:00:00.000Z",
+          note: "Application rejected",
+        },
+      ],
+    };
+    expect(calculateLifecycleMetrics([rejectedJourney])).toEqual({
+      applicationsSubmitted: 1,
+      assessmentsCompleted: 1,
+      interviewsCompleted: 1,
+      offersReceived: 0,
+    });
+    expect(applicationReachedStage(rejectedJourney, "Interview")).toBe(true);
+  });
+
+  it("counts multiple completed interview rounds, not just applications", () => {
+    const interview = {
+      stage: "Interview",
+      event: "Interview completed",
+      at: "2026-09-07T10:00:00.000Z",
+      note: "Interview",
+    };
+    expect(
+      calculateLifecycleMetrics([
+        { stage: "Rejected", timeline: [applied, interview, { ...interview }] },
+      ]).interviewsCompleted,
+    ).toBe(2);
   });
 });

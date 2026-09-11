@@ -39,3 +39,53 @@ export function shouldAdvanceCurrentStage(
   }, 0);
   return milestoneTime >= latestRecordedTime;
 }
+
+type ApplicationLifecycleRecord = {
+  stage: string;
+  timeline: ApplicationTimelineEvent[];
+};
+
+const stageOrder = ["Saved", "Applied", "OA", "Interview", "Offer"];
+
+export function applicationReachedStage(
+  application: ApplicationLifecycleRecord,
+  stage: string,
+) {
+  if (application.timeline.some((event) => event.stage === stage)) return true;
+  if (application.stage === "Rejected") return false;
+  return stageOrder.indexOf(application.stage) >= stageOrder.indexOf(stage);
+}
+
+export function calculateLifecycleMetrics(
+  applications: ApplicationLifecycleRecord[],
+) {
+  let assessmentsCompleted = 0;
+  let interviewsCompleted = 0;
+
+  for (const application of applications) {
+    const detailedEvents = application.timeline.filter((event) => event.event);
+    if (detailedEvents.length) {
+      assessmentsCompleted += detailedEvents.filter(
+        (event) => event.event === "Online assessment completed",
+      ).length;
+      interviewsCompleted += detailedEvents.filter(
+        (event) => event.event === "Interview completed",
+      ).length;
+    } else {
+      // Preserve useful totals for records created before detailed milestones existed.
+      if (applicationReachedStage(application, "OA")) assessmentsCompleted += 1;
+      if (applicationReachedStage(application, "Interview")) interviewsCompleted += 1;
+    }
+  }
+
+  return {
+    applicationsSubmitted: applications.filter((application) =>
+      applicationReachedStage(application, "Applied"),
+    ).length,
+    assessmentsCompleted,
+    interviewsCompleted,
+    offersReceived: applications.filter((application) =>
+      applicationReachedStage(application, "Offer"),
+    ).length,
+  };
+}

@@ -9,6 +9,8 @@ import { AIStudio } from "./ai-studio";
 import { MailTracker } from "./mail-tracker";
 import {
   applicationMilestones,
+  applicationReachedStage,
+  calculateLifecycleMetrics,
   mergeRecordedMilestone,
   shouldAdvanceCurrentStage,
   type ApplicationTimelineEvent,
@@ -307,30 +309,30 @@ export default function Home() {
       .toUpperCase() || "CU";
   const isDemoAccount =
     profile.email.toLowerCase() === "kashmirasanjaypatil@gmail.com";
-  const applicationCount = storedApplications.length;
+  const lifecycleMetrics = calculateLifecycleMetrics(storedApplications);
   const pipeline = [
     {
-      n: storedApplications.filter((item) => item.stage === "Saved").length,
+      n: storedApplications.filter((item) => applicationReachedStage(item, "Saved")).length,
       l: "Saved",
       c: "gray",
     },
     {
-      n: storedApplications.filter((item) => item.stage === "Applied").length,
+      n: lifecycleMetrics.applicationsSubmitted,
       l: "Applied",
       c: "blue",
     },
     {
-      n: storedApplications.filter((item) => item.stage === "OA").length,
+      n: storedApplications.filter((item) => applicationReachedStage(item, "OA")).length,
       l: "OA",
       c: "purple",
     },
     {
-      n: storedApplications.filter((item) => item.stage === "Interview").length,
+      n: storedApplications.filter((item) => applicationReachedStage(item, "Interview")).length,
       l: "Interview",
       c: "orange",
     },
     {
-      n: storedApplications.filter((item) => item.stage === "Offer").length,
+      n: lifecycleMetrics.offersReceived,
       l: "Offer",
       c: "green",
     },
@@ -728,7 +730,7 @@ export default function Home() {
               </span>
               {item}
               {item === "Applications" && (
-                <span className="count">{applicationCount}</span>
+                <span className="count">{storedApplications.length}</span>
               )}
             </button>
           ))}
@@ -827,40 +829,34 @@ export default function Home() {
               <article>
                 <div className="metric-top">
                   <span className="metric-icon coral">↗</span>
-                  <span className={isDemoAccount ? "trend up" : "trend"}>
-                    {isDemoAccount ? "+4 this week" : "Start tracking"}
-                  </span>
+                  <span className="trend">All recorded applications</span>
                 </div>
-                <strong>{applicationCount}</strong>
-                <p>Applications sent</p>
+                <strong>{lifecycleMetrics.applicationsSubmitted}</strong>
+                <p>Applications submitted</p>
               </article>
               <article>
                 <div className="metric-top">
                   <span className="metric-icon blue">◷</span>
-                  <span className="trend">
-                    {isDemoAccount ? "3 active" : "No active roles"}
-                  </span>
+                  <span className="trend">Completed assessments</span>
                 </div>
-                <strong>{isDemoAccount ? 6 : 0}</strong>
-                <p>In progress</p>
+                <strong>{lifecycleMetrics.assessmentsCompleted}</strong>
+                <p>OAs attempted</p>
               </article>
               <article>
                 <div className="metric-top">
                   <span className="metric-icon amber">⌁</span>
-                  <span className={isDemoAccount ? "trend up" : "trend"}>
-                    {isDemoAccount ? "+5.2%" : "No data yet"}
-                  </span>
+                  <span className="trend">Completed rounds</span>
                 </div>
-                <strong>{isDemoAccount ? "37.5%" : "0%"}</strong>
-                <p>Response rate</p>
+                <strong>{lifecycleMetrics.interviewsCompleted}</strong>
+                <p>Interviews attended</p>
               </article>
               <article>
                 <div className="metric-top">
                   <span className="metric-icon green">✦</span>
-                  <span className="trend">This month</span>
+                  <span className="trend">Across all outcomes</span>
                 </div>
-                <strong>{isDemoAccount ? 2 : 0}</strong>
-                <p>Interviews</p>
+                <strong>{lifecycleMetrics.offersReceived}</strong>
+                <p>Offers received</p>
               </article>
             </section>
 
@@ -904,13 +900,15 @@ export default function Home() {
                 <div className="conversion">
                   <span>Application → interview conversion</span>
                   <strong>
-                    {isDemoAccount ? (
-                      <>
-                        20.8% <em>↑ 3.1%</em>
-                      </>
-                    ) : (
-                      "0%"
-                    )}
+                    {lifecycleMetrics.applicationsSubmitted
+                      ? `${Math.round(
+                          (storedApplications.filter((item) =>
+                            applicationReachedStage(item, "Interview"),
+                          ).length /
+                            lifecycleMetrics.applicationsSubmitted) *
+                            100,
+                        )}%`
+                      : "0%"}
                   </strong>
                 </div>
               </article>
