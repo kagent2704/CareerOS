@@ -7,6 +7,12 @@ import { WorkspaceItem, WorkspaceView } from "./workspaces";
 import { AIHub } from "./ai-hub";
 import { AIStudio } from "./ai-studio";
 import { MailTracker } from "./mail-tracker";
+import {
+  applicationMilestones,
+  mergeRecordedMilestone,
+  shouldAdvanceCurrentStage,
+  type ApplicationTimelineEvent,
+} from "@/lib/application-lifecycle";
 import "./dashboard.css";
 
 type Application = {
@@ -27,7 +33,7 @@ type Application = {
   recruiter: string;
   coverLetter: string;
   notes: string;
-  timeline: Array<{ stage: string; at: string; note: string }>;
+  timeline: ApplicationTimelineEvent[];
   createdAt: string;
 };
 
@@ -46,7 +52,7 @@ type ApplicationRow = {
   recruiter: string;
   cover_letter: string;
   notes: string;
-  timeline: Array<{ stage: string; at: string; note: string }>;
+  timeline: ApplicationTimelineEvent[];
   created_at: string;
 };
 
@@ -109,6 +115,13 @@ const companyColors = ["#5b5bd6", "#1769e0", "#7f38c7", "#151515", "#ef6a3a"];
 const applicationSelect =
   "id, company, role, location, stage, match_score, deadline, source_url, resume_item_id, salary, referral, recruiter, cover_letter, notes, timeline, created_at";
 
+function localDatetimeNow() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+}
+
 function formatApplication(row: ApplicationRow): Application {
   const colorIndex =
     [...row.company].reduce(
@@ -168,6 +181,10 @@ export default function Home() {
   const [showProfile, setShowProfile] = useState(false);
   const [selectedApplication, setSelectedApplication] =
     useState<Application | null>(null);
+  const [milestoneType, setMilestoneType] = useState("applied");
+  const [milestoneAt, setMilestoneAt] = useState(localDatetimeNow);
+  const [milestoneNote, setMilestoneNote] = useState("");
+  const [savingMilestone, setSavingMilestone] = useState(false);
   const [utilityPanel, setUtilityPanel] = useState<
     "notifications" | "calendar" | "coach" | null
   >(null);
@@ -204,6 +221,12 @@ export default function Home() {
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+  function openApplication(application: Application) {
+    setMilestoneAt(localDatetimeNow());
+    setMilestoneNote("");
+    setSelectedApplication(application);
+  }
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -555,6 +578,65 @@ export default function Home() {
     );
     setSelectedApplication(null);
     notify("Application updated");
+  }
+
+  async function recordApplicationMilestone() {
+    if (!selectedApplication || !milestoneAt) return;
+    const definition = applicationMilestones.find(
+      (milestone) => milestone.value === milestoneType,
+    );
+    if (!definition) return;
+    setSavingMilestone(true);
+    const eventAt = new Date(milestoneAt).toISOString();
+    const advancesCurrentStage = shouldAdvanceCurrentStage(
+      selectedApplication.timeline,
+      eventAt,
+    );
+    const stageChanged =
+      advancesCurrentStage && definition.stage !== selectedApplication.stage;
+    let databaseApplication = selectedApplication;
+    if (stageChanged) {
+      const { data, error } = await createClient()
+        .from("applications")
+        .update({ stage: definition.stage })
+        .eq("id", selectedApplication.id)
+        .select(applicationSelect)
+        .single();
+      if (error || !data) {
+        setSavingMilestone(false);
+        return notify(error?.message || "Could not update the application stage");
+      }
+      databaseApplication = formatApplication(data as ApplicationRow);
+    }
+    const event: ApplicationTimelineEvent = {
+      stage: definition.stage,
+      event: definition.label,
+      current_stage: definition.stage,
+      at: eventAt,
+      note: milestoneNote.trim() || definition.label,
+    };
+    const timeline = mergeRecordedMilestone(
+      databaseApplication.timeline,
+      stageChanged,
+      event,
+    );
+    const { data, error } = await createClient()
+      .from("applications")
+      .update({ timeline })
+      .eq("id", selectedApplication.id)
+      .select(applicationSelect)
+      .single();
+    setSavingMilestone(false);
+    if (error || !data)
+      return notify(error?.message || "Could not save the milestone");
+    const formatted = formatApplication(data as ApplicationRow);
+    setSelectedApplication(formatted);
+    setStoredApplications((current) =>
+      current.map((item) => (item.id === formatted.id ? formatted : item)),
+    );
+    setMilestoneNote("");
+    setMilestoneAt(localDatetimeNow());
+    notify(`${definition.label} added to the timeline`);
   }
 
   async function deleteApplication() {
@@ -923,7 +1005,7 @@ export default function Home() {
                     <button
                       className="application-row"
                       key={`${item.company}-${index}`}
-                      onClick={() => setSelectedApplication(item)}
+                      onClick={() => openApplication(item)}
                     >
                       <span
                         className="company-logo"
@@ -1054,7 +1136,7 @@ export default function Home() {
               setShowModal(true);
             }}
             onSelectApplication={(application) =>
-              setSelectedApplication(application as Application)
+              openApplication(application as Application)
             }
             onAddItem={addWorkspaceItem}
             onDeleteItem={deleteWorkspaceItem}
@@ -1349,7 +1431,11 @@ export default function Home() {
               </label>
               <label>
                 Stage
-                <select name="stage" defaultValue={selectedApplication.stage}>
+                <select
+                  key={selectedApplication.stage}
+                  name="stage"
+                  defaultValue={selectedApplication.stage}
+                >
                   {[
                     "Saved",
                     "Applied",
@@ -1445,24 +1531,81 @@ export default function Home() {
                   placeholder="https://…"
                 />
               </label>
-              {selectedApplication.timeline.length > 0 && (
-                <div className="application-timeline">
-                  <strong>Status timeline</strong>
-                  {[...selectedApplication.timeline]
-                    .reverse()
-                    .map((event, index) => (
-                      <div key={`${event.at}-${index}`}>
-                        <i />
-                        <span>
-                          <b>{event.stage}</b>
-                          <small>
-                            {new Date(event.at).toLocaleString()} · {event.note}
-                          </small>
-                        </span>
-                      </div>
-                    ))}
+              <section className="milestone-recorder">
+                <div>
+                  <strong>Record progress</strong>
+                  <small>
+                    Add every assessment and interview—not just the final status.
+                    Backdated entries keep the current outcome unchanged.
+                  </small>
                 </div>
-              )}
+                <label>
+                  Milestone
+                  <select
+                    value={milestoneType}
+                    onChange={(event) => setMilestoneType(event.target.value)}
+                  >
+                    {applicationMilestones.map((milestone) => (
+                      <option value={milestone.value} key={milestone.value}>
+                        {milestone.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  When it happened
+                  <input
+                    type="datetime-local"
+                    value={milestoneAt}
+                    onChange={(event) => setMilestoneAt(event.target.value)}
+                  />
+                </label>
+                <label>
+                  Round, outcome, or notes
+                  <textarea
+                    value={milestoneNote}
+                    onChange={(event) => setMilestoneNote(event.target.value)}
+                    placeholder="e.g. Round 2 — system design; progressed to hiring manager"
+                  />
+                </label>
+                <button
+                  className="record-milestone-button"
+                  type="button"
+                  disabled={savingMilestone || !milestoneAt}
+                  onClick={recordApplicationMilestone}
+                >
+                  {savingMilestone ? "Recording…" : "Add to timeline"}
+                </button>
+              </section>
+              <div className="application-timeline">
+                <div className="timeline-heading">
+                  <span>
+                    <strong>Full application journey</strong>
+                    <small>{selectedApplication.timeline.length} milestones</small>
+                  </span>
+                  <b>{selectedApplication.stage}</b>
+                </div>
+                {[...selectedApplication.timeline]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.at).getTime() - new Date(b.at).getTime(),
+                  )
+                  .map((event, index) => (
+                    <div key={`${event.at}-${index}`}>
+                      <i />
+                      <span>
+                        <b>{event.event || event.stage}</b>
+                        <small>{new Date(event.at).toLocaleString()}</small>
+                        <p>{event.note}</p>
+                      </span>
+                    </div>
+                  ))}
+                {!selectedApplication.timeline.length && (
+                  <p className="timeline-empty">
+                    No milestones yet. Record the first step above.
+                  </p>
+                )}
+              </div>
               <div className="modal-actions split-actions">
                 <button
                   type="button"

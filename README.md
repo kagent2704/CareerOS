@@ -75,6 +75,8 @@ The **Overview** page summarizes your job search:
 
 The application appears at the top of **Recent applications** and is saved to your account. Applications remain available after refreshing, signing out, or changing devices. Only you can access your records.
 
+To preserve the complete recruiting journey, open an application and use **Record progress** for every milestone: submission, assessment invitation or completion, each interview round, offer, or rejection. Each entry stores its own date and notes. The pipeline status shows the latest outcome, while **Full application journey** keeps every earlier step visible. You can safely backfill older events after a rejection or offer; backdated entries are placed chronologically without rolling the current outcome backward.
+
 ## 6. Search applications
 
 Use the search field at the top of the dashboard to filter recent applications by:

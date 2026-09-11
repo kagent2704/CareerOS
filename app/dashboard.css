@@ -1293,9 +1293,27 @@
   border-radius: 12px;
   background: #faf9f6;
 }
-.application-timeline > strong {
-  display: block;
+.timeline-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 10px;
+}
+.timeline-heading > span {
+  display: grid;
+  gap: 2px;
+}
+.timeline-heading small {
+  color: #858980;
+  font-weight: 400;
+}
+.timeline-heading > b {
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: #282a25;
+  color: #fff;
+  font-size: 8px;
 }
 .application-timeline > div {
   display: flex;
@@ -1308,6 +1326,7 @@
   margin-top: 5px;
   border-radius: 50%;
   background: #ed7049;
+  box-shadow: 0 0 0 4px #fbe6dd;
 }
 .application-timeline span {
   display: grid;
@@ -1315,6 +1334,48 @@
 }
 .application-timeline small {
   color: #7a7d76;
+}
+.application-timeline p {
+  margin: 2px 0 0;
+  color: #545851;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.application-timeline .timeline-empty {
+  margin: 0;
+  color: #7a7d76;
+}
+.milestone-recorder {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #f0c5b6;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff8f4;
+}
+.milestone-recorder > div {
+  display: grid;
+  gap: 3px;
+}
+.milestone-recorder > div small {
+  color: #777b73;
+}
+.milestone-recorder textarea {
+  min-height: 72px;
+}
+.record-milestone-button {
+  justify-self: end;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 16px;
+  background: #ed7049;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+.record-milestone-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 .offer-table {
   overflow-x: auto;
