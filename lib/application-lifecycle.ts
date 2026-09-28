@@ -47,6 +47,25 @@ type ApplicationLifecycleRecord = {
 
 const stageOrder = ["Saved", "Applied", "OA", "Interview", "Offer"];
 
+export function nextActionForStage(stage: string) {
+  switch (stage) {
+    case "Saved":
+      return "Decide whether to apply";
+    case "Applied":
+      return "Watch for a response";
+    case "OA":
+      return "Complete assessment or await result";
+    case "Interview":
+      return "Prepare for the next round";
+    case "Offer":
+      return "Review offer details";
+    case "Rejected":
+      return "Capture the lesson and move on";
+    default:
+      return "Add the next milestone";
+  }
+}
+
 export function applicationReachedStage(
   application: ApplicationLifecycleRecord,
   stage: string,

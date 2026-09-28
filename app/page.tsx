@@ -12,6 +12,7 @@ import {
   applicationReachedStage,
   calculateLifecycleMetrics,
   mergeRecordedMilestone,
+  nextActionForStage,
   shouldAdvanceCurrentStage,
   type ApplicationTimelineEvent,
 } from "@/lib/application-lifecycle";
@@ -1403,6 +1404,22 @@ export default function Home() {
             <span className="modal-kicker">APPLICATION DETAILS</span>
             <h2>{selectedApplication.company}</h2>
             <p>Update the opportunity as it moves through your pipeline.</p>
+            <div className="application-detail-hero">
+              <div>
+                <small>Role</small>
+                <strong>{selectedApplication.role}</strong>
+              </div>
+              <div>
+                <small>Next move</small>
+                <strong>{nextActionForStage(selectedApplication.stage)}</strong>
+              </div>
+              <div>
+                <small>Current stage</small>
+                <strong className="current-stage">
+                  {selectedApplication.stage}
+                </strong>
+              </div>
+            </div>
             <form onSubmit={updateApplication}>
               <label>
                 Company

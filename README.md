@@ -116,6 +116,8 @@ The sidebar contains the following workspace areas:
 Every navigation item opens a dedicated workspace:
 
 - **Applications** is the durable recruiting system of record. Live jobs can prefill a new application; each record stores its source, resume version, compensation, referral, recruiter, tailored cover letter, notes, deadline, match score, and an automatically appended stage timeline.
+
+The Applications workspace also shows the recommended next move for each opportunity. Open a record to see its role, current stage, next action, structured metadata, and full journey together. This keeps the tracker focused on what to do next rather than making it only a data-entry form.
 - **Jobs** loads current openings from public direct-employer Greenhouse feeds and ranks them by your preferred roles, locations, work modes, and latest AI resume profile. Every live card links to the employer's hosted posting and shows its source and update date. If feeds are unavailable, CareerOS labels and uses a small starter catalog instead of presenting it as live data.
 - **Companies** combines employers detected in applications with structured target-company research: industry, locations, website, career page, dream rating, priority, and notes.
 - **Interviews** provides a monthly calendar and agenda. Schedule individual rounds with company, role, date, time, format, meeting link, and preparation notes.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { nextActionForStage } from "@/lib/application-lifecycle";
 
 export type WorkspaceItem = {
   id: string;
@@ -174,6 +175,7 @@ export function WorkspaceView(props: Props) {
                 <span>Opportunity</span>
                 <span>Stage</span>
                 <span>Match</span>
+                <span>Next move</span>
                 <span>Deadline</span>
                 <span />
               </div>
@@ -193,6 +195,7 @@ export function WorkspaceView(props: Props) {
                     <i className="status-pill">{app.stage}</i>
                   </span>
                   <span>{app.match}%</span>
+                  <span className="next-move">{nextActionForStage(app.stage)}</span>
                   <span>{app.date}</span>
                   <span>›</span>
                 </button>
