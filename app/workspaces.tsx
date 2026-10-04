@@ -118,6 +118,7 @@ const moduleCopy: Record<
 export function WorkspaceView(props: Props) {
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState("All");
+  const [applicationFilter, setApplicationFilter] = useState("All");
   const config = moduleCopy[props.active];
   const relevant = useMemo(() => {
     if (!config) return [];
@@ -141,6 +142,15 @@ export function WorkspaceView(props: Props) {
         .toLowerCase()
         .includes(props.query.toLowerCase()),
     );
+    const visibleApplications = apps.filter((application) => {
+      if (applicationFilter === "Active")
+        return !["Rejected", "Offer"].includes(application.stage);
+      if (applicationFilter === "Closed")
+        return ["Rejected", "Offer"].includes(application.stage);
+      if (applicationFilter === "Needs attention")
+        return ["Saved", "Applied", "OA", "Interview"].includes(application.stage);
+      return true;
+    });
     return (
       <div className="workspace-page">
         <WorkspaceHeader
@@ -162,14 +172,33 @@ export function WorkspaceView(props: Props) {
             ),
           )}
         </div>
+        <div className="workspace-toolbar application-toolbar">
+          <div className="filter-tabs">
+            {[
+              ["All", "All"],
+              ["Needs attention", "Needs attention"],
+              ["Active", "Active"],
+              ["Closed", "Closed"],
+            ].map(([value, label]) => (
+              <button
+                className={applicationFilter === value ? "selected" : ""}
+                key={value}
+                onClick={() => setApplicationFilter(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <span>{visibleApplications.length} visible</span>
+        </div>
         <div className="workspace-card table-card">
           <div className="workspace-card-head">
             <div>
               <h2>All applications</h2>
-              <p>{apps.length} records</p>
+              <p>{visibleApplications.length} records · click any row to open the full workspace</p>
             </div>
           </div>
-          {apps.length ? (
+          {visibleApplications.length ? (
             <div className="data-table">
               <div className="data-row data-head">
                 <span>Opportunity</span>
@@ -179,7 +208,7 @@ export function WorkspaceView(props: Props) {
                 <span>Deadline</span>
                 <span />
               </div>
-              {apps.map((app) => (
+              {visibleApplications.map((app) => (
                 <button
                   className="data-row"
                   key={app.id}
@@ -204,7 +233,7 @@ export function WorkspaceView(props: Props) {
           ) : (
             <EmptyState
               title="No applications found"
-              text="Add an opportunity or clear your search."
+              text="Add an opportunity or clear your search or filter."
               action="Add application"
               onAction={props.onAddApplication}
             />
