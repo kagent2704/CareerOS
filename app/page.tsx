@@ -22,6 +22,7 @@ type Application = {
   id: string;
   company: string;
   initials: string;
+  logoUrl: string | null;
   color: string;
   role: string;
   location: string;
@@ -58,6 +59,37 @@ type ApplicationRow = {
   timeline: ApplicationTimelineEvent[];
   created_at: string;
 };
+
+const companyDomains: Record<string, string> = {
+  google: "google.com",
+  microsoft: "microsoft.com",
+  amazon: "amazon.com",
+  razorpay: "razorpay.com",
+  atlassian: "atlassian.com",
+  infosys: "infosys.com",
+  accenture: "accenture.com",
+  forvis: "forvismazars.com",
+};
+
+function getCompanyLogoUrl(company: string, sourceUrl: string) {
+  const normalized = company.toLowerCase().trim();
+  const mappedDomain = Object.entries(companyDomains).find(([name]) =>
+    normalized.includes(name),
+  )?.[1];
+  let domain = mappedDomain;
+  if (!domain && sourceUrl) {
+    try {
+      const hostname = new URL(sourceUrl).hostname.replace(/^www\./, "");
+      if (!/(linkedin|indeed|naukri|greenhouse|lever)\./i.test(hostname))
+        domain = hostname;
+    } catch {
+      domain = undefined;
+    }
+  }
+  return domain
+    ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+    : null;
+}
 
 const demoApplications: Array<
   Pick<
@@ -135,6 +167,7 @@ function formatApplication(row: ApplicationRow): Application {
     id: row.id,
     company: row.company,
     initials: row.company.slice(0, 2).toUpperCase(),
+    logoUrl: getCompanyLogoUrl(row.company, row.source_url || ""),
     color: companyColors[colorIndex],
     role: row.role,
     location: row.location,
@@ -1004,6 +1037,7 @@ export default function Home() {
                     <button
                       className="application-row"
                       key={`${item.company}-${index}`}
+                      aria-label={`Open ${item.role} at ${item.company}, ${item.stage}`}
                       onClick={() => openApplication(item)}
                     >
                       <span
@@ -1011,6 +1045,15 @@ export default function Home() {
                         style={{ background: item.color }}
                       >
                         {item.initials}
+                        {item.logoUrl ? (
+                          <img
+                            src={item.logoUrl}
+                            alt={`${item.company} logo`}
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : null}
                       </span>
                       <span className="job-info">
                         <strong>{item.role}</strong>

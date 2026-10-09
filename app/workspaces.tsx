@@ -21,6 +21,7 @@ export type WorkspaceApplication = {
   stage: string;
   date: string;
   match: number;
+  logoUrl?: string | null;
   createdAt?: string;
 };
 
@@ -215,6 +216,14 @@ export function WorkspaceView(props: Props) {
                   onClick={() => props.onSelectApplication(app)}
                 >
                   <span>
+                    {app.logoUrl ? (
+                      <img
+                        className="table-company-logo"
+                        src={app.logoUrl}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    ) : null}
                     <strong>{app.role}</strong>
                     <small>
                       {app.company} · {app.location}
