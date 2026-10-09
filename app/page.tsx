@@ -91,61 +91,6 @@ function getCompanyLogoUrl(company: string, sourceUrl: string) {
     : null;
 }
 
-const demoApplications: Array<
-  Pick<
-    Application,
-    | "company"
-    | "initials"
-    | "color"
-    | "role"
-    | "location"
-    | "stage"
-    | "date"
-    | "match"
-  >
-> = [
-  {
-    company: "Razorpay",
-    initials: "RZ",
-    color: "#5b5bd6",
-    role: "Backend Engineer",
-    location: "Bengaluru · Hybrid",
-    stage: "Interview",
-    date: "Aug 12",
-    match: 94,
-  },
-  {
-    company: "Atlassian",
-    initials: "AT",
-    color: "#1769e0",
-    role: "Graduate Software Engineer",
-    location: "Bengaluru · Remote",
-    stage: "Applied",
-    date: "Aug 6",
-    match: 91,
-  },
-  {
-    company: "Zepto",
-    initials: "ZP",
-    color: "#7f38c7",
-    role: "Data Engineer",
-    location: "Mumbai · On-site",
-    stage: "OA",
-    date: "Aug 9",
-    match: 88,
-  },
-  {
-    company: "CRED",
-    initials: "CR",
-    color: "#151515",
-    role: "Software Engineer I",
-    location: "Bengaluru · Hybrid",
-    stage: "Saved",
-    date: "Aug 15",
-    match: 84,
-  },
-];
-
 const companyColors = ["#5b5bd6", "#1769e0", "#7f38c7", "#151515", "#ef6a3a"];
 const applicationSelect =
   "id, company, role, location, stage, match_score, deadline, source_url, resume_item_id, salary, referral, recruiter, cover_letter, notes, timeline, created_at";
@@ -292,32 +237,10 @@ export default function Home() {
         leetcode: user.user_metadata.leetcode || "",
         kaggle: user.user_metadata.kaggle || "",
       });
-      let { data, error } = await supabase
+      const { data, error } = await supabase
         .from("applications")
         .select(applicationSelect)
         .order("created_at", { ascending: false });
-      if (
-        !error &&
-        data?.length === 0 &&
-        user.email?.toLowerCase() === "kashmirasanjaypatil@gmail.com"
-      ) {
-        const seeded = await supabase
-          .from("applications")
-          .insert(
-            demoApplications.map((application) => ({
-              user_id: user.id,
-              company: application.company,
-              role: application.role,
-              location: application.location,
-              stage: application.stage,
-              match_score: application.match,
-              deadline: `2026-${application.date === "Aug 6" ? "08-06" : application.date === "Aug 9" ? "08-09" : application.date === "Aug 12" ? "08-12" : "08-15"}`,
-            })),
-          )
-          .select(applicationSelect);
-        data = seeded.data;
-        error = seeded.error;
-      }
       if (error) {
         setToast(`Could not load applications: ${error.message}`);
         window.setTimeout(() => setToast(""), 4000);
@@ -341,8 +264,6 @@ export default function Home() {
       .map((part) => part[0])
       .join("")
       .toUpperCase() || "CU";
-  const isDemoAccount =
-    profile.email.toLowerCase() === "kashmirasanjaypatil@gmail.com";
   const lifecycleMetrics = calculateLifecycleMetrics(storedApplications);
   const pipeline = [
     {
@@ -371,6 +292,17 @@ export default function Home() {
       c: "green",
     },
   ];
+  const attentionApplications = storedApplications.filter((item) =>
+    ["Saved", "Applied", "OA", "Interview"].includes(item.stage),
+  );
+  const upcomingApplications = storedApplications
+    .filter((item) => item.deadline)
+    .sort(
+      (a, b) =>
+        new Date(a.deadline || "").getTime() -
+        new Date(b.deadline || "").getTime(),
+    )
+    .slice(0, 3);
 
   const rows = useMemo(
     () =>
@@ -853,8 +785,8 @@ export default function Home() {
               <div className="week-chip">
                 <span>↗</span>
                 <div>
-                  <strong>Strong week</strong>
-                  <small>12% more activity</small>
+                  <strong>Activity overview</strong>
+                  <small>{attentionApplications.length} active opportunities</small>
                 </div>
               </div>
             </section>
@@ -947,72 +879,35 @@ export default function Home() {
                 </div>
               </article>
 
-              {isDemoAccount ? (
-                <article className="panel focus-panel">
-                  <div className="focus-top">
-                    <span className="spark">✦</span>
-                    <span>Today’s focus</span>
-                    <small>3 tasks</small>
-                  </div>
-                  <h2>Small steps, big momentum.</h2>
-                  <label>
-                    <input
-                      type="checkbox"
-                      onChange={(e) =>
-                        e.currentTarget.parentElement?.classList.toggle(
-                          "done",
-                          e.currentTarget.checked,
-                        )
-                      }
-                    />
-                    <span>
-                      Prepare for Razorpay technical round
-                      <small>Tomorrow, 11:00 AM</small>
-                    </span>
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      onChange={(e) =>
-                        e.currentTarget.parentElement?.classList.toggle(
-                          "done",
-                          e.currentTarget.checked,
-                        )
-                      }
-                    />
-                    <span>
-                      Complete Zepto online assessment<small>Due Aug 9</small>
-                    </span>
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      onChange={(e) =>
-                        e.currentTarget.parentElement?.classList.toggle(
-                          "done",
-                          e.currentTarget.checked,
-                        )
-                      }
-                    />
-                    <span>
-                      Follow up with Priya at Atlassian
-                      <small>Last contacted 5 days ago</small>
-                    </span>
-                  </label>
-                </article>
-              ) : (
-                <article className="panel focus-panel">
-                  <div className="focus-top">
-                    <span className="spark">✦</span>
-                    <span>Today’s focus</span>
-                    <small>0 tasks</small>
-                  </div>
-                  <h2>Your fresh start begins here.</h2>
+              <article className="panel focus-panel">
+                <div className="focus-top">
+                  <span className="spark">✦</span>
+                  <span>Today’s focus</span>
+                  <small>{attentionApplications.length} active</small>
+                </div>
+                <h2>
+                  {attentionApplications.length
+                    ? "Keep one opportunity moving."
+                    : "Your workspace is ready."}
+                </h2>
+                {attentionApplications.slice(0, 3).map((item) => (
+                  <button
+                    className="focus-action"
+                    key={item.id}
+                    onClick={() => openApplication(item)}
+                  >
+                    <span>{nextActionForStage(item.stage)}</span>
+                    <small>
+                      {item.company} · {item.role}
+                    </small>
+                  </button>
+                ))}
+                {!attentionApplications.length && (
                   <p className="focus-empty">
-                    Add an application to begin building your weekly plan.
+                    Add an application to generate your next actions.
                   </p>
-                </article>
-              )}
+                )}
+              </article>
             </section>
 
             <section className="grid-main lower-grid">
@@ -1096,64 +991,35 @@ export default function Home() {
                       ▦
                     </button>
                   </div>
-                  {isDemoAccount ? (
-                    <>
-                      <div className="event">
-                        <div className="date-box urgent">
-                          <strong>08</strong>
-                          <small>AUG</small>
-                        </div>
-                        <div>
-                          <strong>Razorpay interview</strong>
-                          <small>11:00 AM · Google Meet</small>
-                        </div>
-                        <span className="event-dot coral-bg" />
-                      </div>
-                      <div className="event">
+                  {upcomingApplications.length ? (
+                    upcomingApplications.map((item) => (
+                      <button
+                        className="event event-button"
+                        key={item.id}
+                        onClick={() => openApplication(item)}
+                      >
                         <div className="date-box">
-                          <strong>09</strong>
-                          <small>AUG</small>
+                          <strong>
+                            {new Date(`${item.deadline}T00:00:00`).getDate()}
+                          </strong>
+                          <small>
+                            {new Date(`${item.deadline}T00:00:00`).toLocaleDateString(
+                              undefined,
+                              { month: "short" },
+                            )}
+                          </small>
                         </div>
                         <div>
-                          <strong>Zepto OA deadline</strong>
-                          <small>11:59 PM · HackerRank</small>
-                        </div>
-                        <span className="event-dot purple-bg" />
-                      </div>
-                      <div className="event">
-                        <div className="date-box">
-                          <strong>12</strong>
-                          <small>AUG</small>
-                        </div>
-                        <div>
-                          <strong>Referral follow-up</strong>
-                          <small>Priya · Atlassian</small>
+                          <strong>{item.company} · {item.role}</strong>
+                          <small>{nextActionForStage(item.stage)}</small>
                         </div>
                         <span className="event-dot blue-bg" />
-                      </div>
-                    </>
+                      </button>
+                    ))
                   ) : (
                     <div className="empty">No upcoming deadlines yet.</div>
                   )}
                 </article>
-                {isDemoAccount && (
-                  <article className="insight-card">
-                    <span className="insight-icon">↗</span>
-                    <div>
-                      <small>CAREER INSIGHT</small>
-                      <strong>Your response rate is rising.</strong>
-                      <p>
-                        Backend roles are getting <b>2.4×</b> more responses
-                        than your other applications.
-                      </p>
-                      <button
-                        onClick={() => notify("Analytics insight opened")}
-                      >
-                        See full insight →
-                      </button>
-                    </div>
-                  </article>
-                )}
               </aside>
             </section>
           </div>
