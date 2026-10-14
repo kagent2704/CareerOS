@@ -328,7 +328,7 @@ export function WorkspaceView(props: Props) {
         ))}
         {inferred.map((company) => (
           <article className="record-card" key={company}>
-            <div className="record-icon company-logo"><span>{company.slice(0, 2).toUpperCase()}</span><img src={companyLogo(company)} alt={`${company} logo`} onError={(e) => { e.currentTarget.style.display = "none"; }} /></div>
+            <div className="record-icon company-logo"><span>{company.slice(0, 2).toUpperCase()}</span><img src={companyLogo(company) || ""} alt={`${company} logo`} onError={(e) => { e.currentTarget.style.display = "none"; }} /></div>
             <div className="record-main">
               <small>From applications</small>
               <h3>{company}</h3>
