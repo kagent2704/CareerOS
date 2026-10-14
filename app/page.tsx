@@ -678,7 +678,7 @@ export default function Home() {
     <main className="app-shell">
       <aside className="sidebar">
         <a className="brand" href="#top" aria-label="CareerOS home">
-          <img className="brand-logo" src="/careeros-logo.png" alt="CareerOS" />
+          <img className="brand-logo" src="/careeros-sidebar-logo.png" alt="CareerOS" />
         </a>
         <nav className="main-nav" aria-label="Primary navigation">
           <p className="nav-label">Workspace</p>
