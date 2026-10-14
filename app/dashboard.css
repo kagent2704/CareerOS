@@ -1047,6 +1047,17 @@ textarea:focus-visible {
   font-size: 9px;
   cursor: pointer;
 }
+.job-profile-picker {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  margin: 0 0 14px;
+  color: #5f625b;
+  font-size: 10px;
+}
+.job-profile-picker label { display: grid; gap: 6px; font-weight: 700; }
+.job-profile-picker select { min-width: 250px; border: 1px solid #d8d4ca; border-radius: 8px; padding: 9px 10px; background: #fff; color: #252722; }
+.job-profile-picker small { color: #8a8c85; font-size: 9px; }
 .job-board-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1060,7 +1071,20 @@ textarea:focus-visible {
   border-radius: 13px;
   background: #fff;
   padding: 18px;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
 }
+.job-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31,34,29,.08); }
+.job-card .company-logo { position: relative; overflow: hidden; }
+.job-card .company-logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 7px; background: #fff0ea; }
+.job-card .company-logo img[src=""] { display: none; }
+.job-roadmap { max-width: 560px; }
+.roadmap-list { display: grid; gap: 14px; margin: 22px 0; padding-left: 24px; }
+.roadmap-list li { padding-left: 5px; }
+.roadmap-list strong, .roadmap-list span { display: block; }
+.roadmap-list span { margin-top: 4px; color: #74776f; font-size: 12px; line-height: 1.5; }
+.roadmap-actions { display: flex; align-items: center; gap: 14px; }
+.roadmap-actions a { color: #e16b45; font-size: 12px; }
 .job-card-top {
   display: flex;
   justify-content: space-between;

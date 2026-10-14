@@ -328,9 +328,7 @@ export function WorkspaceView(props: Props) {
         ))}
         {inferred.map((company) => (
           <article className="record-card" key={company}>
-            <div className="record-icon">
-              {company.slice(0, 2).toUpperCase()}
-            </div>
+            <div className="record-icon company-logo"><span>{company.slice(0, 2).toUpperCase()}</span><img src={companyLogo(company)} alt={`${company} logo`} onError={(e) => { e.currentTarget.style.display = "none"; }} /></div>
             <div className="record-main">
               <small>From applications</small>
               <h3>{company}</h3>
@@ -971,6 +969,27 @@ const fallbackJobs = [
   },
 ];
 
+const companyDomains: Record<string, string> = {
+  atlassian: "atlassian.com", razorpay: "razorpay.com", mastercard: "mastercard.com",
+  druva: "druva.com", microsoft: "microsoft.com", zepto: "zeptonow.com",
+  phonepe: "phonepe.com", canonical: "canonical.com", ltm: "ltimindtree.com",
+  capgemini: "capgemini.com", juspay: "juspay.in", deloitte: "deloitte.com",
+  opus: "opustech.com", exxonmobil: "exxonmobil.com", "zs associates": "zs.com",
+  opengov: "opengov.com", forvis: "forvismazars.com", mongodb: "mongodb.com",
+  stripe: "stripe.com", postman: "postman.com", cloudflare: "cloudflare.com",
+};
+
+function companyLogo(company: string, sourceUrl?: string) {
+  const key = company.toLowerCase();
+  const domain = Object.entries(companyDomains).find(([name]) => key.includes(name))?.[1];
+  if (domain) return `https://logo.clearbit.com/${domain}`;
+  try {
+    const host = sourceUrl ? new URL(sourceUrl).hostname.replace(/^www\./, "") : "";
+    if (host && !/(greenhouse|lever|linkedin|indeed|naukri)\./i.test(host)) return `https://logo.clearbit.com/${host}`;
+  } catch {}
+  return null;
+}
+
 type JobCard = (typeof fallbackJobs)[number] & {
   description?: string;
   url?: string;
@@ -1011,9 +1030,13 @@ function JobsBoard(props: Props) {
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [feedNote, setFeedNote] = useState("Loading direct employer feeds…");
   const [personalized, setPersonalized] = useState(false);
+  const resumes = props.items.filter((item) => item.kind === "resume");
+  const [selectedResumeId, setSelectedResumeId] = useState("");
+  const [selectedJob, setSelectedJob] = useState<JobCard | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     const params = new URLSearchParams({ roles, locations });
+    if (selectedResumeId) params.set("resumeItemId", selectedResumeId);
     fetch(`/api/jobs?${params}`, { signal: controller.signal })
       .then(async (response) => {
         const payload = await response.json();
@@ -1030,7 +1053,7 @@ function JobsBoard(props: Props) {
       })
       .finally(() => setLoadingJobs(false));
     return () => controller.abort();
-  }, [locations, roles]);
+  }, [locations, roles, selectedResumeId]);
   const roleTerms = roles
     .toLowerCase()
     .split(",")
@@ -1089,6 +1112,15 @@ function JobsBoard(props: Props) {
         </p>
         <button onClick={() => setEditing(true)}>Tune recommendations</button>
       </div>
+      <div className="job-profile-picker">
+        <label>Match openings to resume
+          <select value={selectedResumeId} onChange={(e) => setSelectedResumeId(e.target.value)}>
+            <option value="">All resume profiles</option>
+            {resumes.map((resume) => <option key={resume.id} value={resume.id}>{resume.title}</option>)}
+          </select>
+        </label>
+        {!resumes.length && <small>Upload multiple targeted resumes in Resume Lab to unlock profile-specific matches.</small>}
+      </div>
       <div className="feed-status">
         <span className={liveJobs.length ? "live-dot" : ""} />
         {feedNote}. Rankings use your preferences
@@ -1096,11 +1128,9 @@ function JobsBoard(props: Props) {
       </div>
       <div className="job-board-grid">
         {visible.map((job) => (
-          <article className="job-card" key={job.id}>
+          <article className="job-card" key={job.id} onClick={() => setSelectedJob(job)}>
             <div className="job-card-top">
-              <div className="record-icon">
-                {job.company.slice(0, 2).toUpperCase()}
-              </div>
+              <div className="record-icon company-logo"><span>{job.company.slice(0, 2).toUpperCase()}</span><img src={companyLogo(job.company, job.url) || ""} alt={`${job.company} logo`} onError={(e) => { e.currentTarget.style.display = "none"; }} /></div>
               <span className="match-badge">{job.match}% match</span>
             </div>
             <small>
@@ -1120,7 +1150,7 @@ function JobsBoard(props: Props) {
             <div className="job-actions">
               <button
                 disabled={saved.has(job.id)}
-                onClick={() =>
+                onClick={(event) => { event.stopPropagation();
                   props.onAddItem({
                     kind: "job",
                     title: job.role,
@@ -1135,27 +1165,25 @@ function JobsBoard(props: Props) {
                       url: job.url || null,
                       source: job.source || "CareerOS starter catalog",
                     },
-                  })
-                }
+                  }); }}
               >
                 {saved.has(job.id) ? "Saved" : "Save"}
               </button>
               <button
                 className="primary"
-                onClick={() =>
+                onClick={(event) => { event.stopPropagation();
                   props.onAddApplication({
                     company: job.company,
                     role: job.role,
                     location: `${job.location} · ${job.mode}`,
                     match: job.match,
                     sourceUrl: job.url,
-                  })
-                }
+                  }); }}
               >
                 Track
               </button>
               {job.url && (
-                <a href={job.url} target="_blank" rel="noreferrer">
+                <a href={job.url} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>
                   Apply ↗
                 </a>
               )}
@@ -1163,6 +1191,7 @@ function JobsBoard(props: Props) {
           </article>
         ))}
       </div>
+      {selectedJob && <div className="modal-backdrop" onMouseDown={() => setSelectedJob(null)}><div className="modal job-roadmap" onMouseDown={(e) => e.stopPropagation()}><button className="modal-close" onClick={() => setSelectedJob(null)}>×</button><span className="modal-kicker">APPLICATION ROADMAP</span><h2>{selectedJob.role}</h2><p className="muted">{selectedJob.company} · {selectedJob.location} · {selectedJob.mode}</p><ol className="roadmap-list"><li><strong>Validate the fit</strong><span>Review the requirements against the selected resume and note your strongest evidence.</span></li><li><strong>Prepare your application</strong><span>Tailor the headline and top three bullets, then apply through the employer link.</span></li><li><strong>Build a referral path</strong><span>Search your network for people at {selectedJob.company}; prioritize the hiring team, alumni, and second-degree connections.</span></li><li><strong>Follow up deliberately</strong><span>Track the application, assessment, interview dates, and next follow-up in CareerOS.</span></li></ol><div className="roadmap-actions"><button className="primary" onClick={() => { props.onAddApplication({ company: selectedJob.company, role: selectedJob.role, location: `${selectedJob.location} · ${selectedJob.mode}`, match: selectedJob.match, sourceUrl: selectedJob.url }); setSelectedJob(null); }}>Track this opportunity</button>{selectedJob.url && <a href={selectedJob.url} target="_blank" rel="noreferrer">Open employer posting ↗</a>}</div></div></div>}
       {editing && (
         <div className="modal-backdrop" onMouseDown={() => setEditing(false)}>
           <div
