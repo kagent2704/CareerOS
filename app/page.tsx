@@ -69,6 +69,22 @@ const companyDomains: Record<string, string> = {
   infosys: "infosys.com",
   accenture: "accenture.com",
   forvis: "forvismazars.com",
+  ltm: "ltimindtree.com",
+  capgemini: "capgemini.com",
+  juspay: "juspay.in",
+  deloitte: "deloitte.com",
+  opus: "opustech.com",
+  exxonmobil: "exxonmobil.com",
+  "zs associates": "zs.com",
+  opengov: "opengov.com",
+  mongodb: "mongodb.com",
+  stripe: "stripe.com",
+  postman: "postman.com",
+  cloudflare: "cloudflare.com",
+  phonepe: "phonepe.com",
+  zepto: "zeptonow.com",
+  druva: "druva.com",
+  mastercard: "mastercard.com",
 };
 
 function getCompanyLogoUrl(company: string, sourceUrl: string) {
@@ -86,9 +102,7 @@ function getCompanyLogoUrl(company: string, sourceUrl: string) {
       domain = undefined;
     }
   }
-  return domain
-    ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
-    : null;
+  return domain ? `https://icons.duckduckgo.com/ip3/${domain}.ico` : null;
 }
 
 const companyColors = ["#5b5bd6", "#1769e0", "#7f38c7", "#151515", "#ef6a3a"];
