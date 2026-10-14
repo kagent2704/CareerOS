@@ -47,10 +47,8 @@ export function isRelevantJob(
       haystack.includes(role.toLowerCase()) ||
       normalizedTerms(role).some((term) => haystack.includes(term)),
   );
-  const locationMatch = locations.some((location) =>
-    haystack.includes(location.toLowerCase()),
-  );
-  return (
-    (roleMatch && locationMatch) || (roleMatch && haystack.includes("remote"))
-  );
+  // Location is a ranking signal, not a hard gate. Employer feeds often use
+  // variants such as "Bengaluru, Karnataka" or omit location entirely; those
+  // jobs should still be discoverable and can be filtered in the UI.
+  return roleMatch;
 }

@@ -1079,7 +1079,11 @@ function JobsBoard(props: Props) {
               term.includes(job.role.toLowerCase()),
           )) &&
         (!locationTerms.length ||
-          locationTerms.includes(job.location.toLowerCase())) &&
+          locationTerms.some((term) =>
+            job.location.toLowerCase().includes(term) ||
+            term.includes(job.location.toLowerCase()) ||
+            (term === "remote" && job.mode === "Remote"),
+          )) &&
         modes.includes(job.mode) &&
         `${job.company} ${job.role} ${job.location} ${job.skills}`
           .toLowerCase()
