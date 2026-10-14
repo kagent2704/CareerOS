@@ -48,12 +48,16 @@ export async function GET(request: Request) {
     );
   const url = new URL(request.url);
   const resumeItemId = url.searchParams.get("resumeItemId");
-  let profileQuery = supabase
+  const profileQuery = supabase
     .from("ai_analyses")
     .select("result")
     .eq("analysis_type", "resume_profile");
-  if (resumeItemId) profileQuery = profileQuery.eq("resume_item_id", resumeItemId);
-  const { data: profileRow } = await profileQuery.order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const { data: profileRow } = await (resumeItemId
+    ? profileQuery.eq("resume_item_id", resumeItemId)
+    : profileQuery)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   const profile = (profileRow?.result || {}) as {
     target_roles?: string[];
     skills?: string[];
