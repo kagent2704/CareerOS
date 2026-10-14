@@ -10,9 +10,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "CareerOS — Your career, managed like a product",
   description: "A complete career operating system for ambitious students.",
-  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
-  openGraph: { title: "CareerOS", description: "Your career, managed like a product.", images: [{ url: "/og.png", width: 1200, height: 630, alt: "CareerOS dashboard preview" }] },
-  twitter: { card: "summary_large_image", title: "CareerOS", description: "Your career, managed like a product.", images: ["/og.png"] },
+  icons: {
+    icon: "/careeros-emblem.png",
+    shortcut: "/careeros-emblem.png",
+    apple: "/careeros-emblem.png",
+  },
+  openGraph: { title: "CareerOS", description: "Your career, managed like a product.", images: [{ url: "/careeros-logo.png", width: 2048, height: 768, alt: "CareerOS logo" }] },
+  twitter: { card: "summary_large_image", title: "CareerOS", description: "Your career, managed like a product.", images: ["/careeros-logo.png"] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -46,7 +46,7 @@ export default function AuthPage() {
 
   return <main className="auth-page">
     <section className="auth-story">
-      <a className="auth-brand" href="#"><span>C</span>Career<b>OS</b></a>
+      <a className="auth-brand" href="#"><img src="/careeros-logo.png" alt="CareerOS" /></a>
       <div className="story-copy"><p className="story-kicker">YOUR CAREER COMMAND CENTER</p><h1>Turn ambition into<br/><em>momentum.</em></h1><p>Plan your search, prepare with purpose, and make every application count.</p></div>
       <div className="story-proof"><div><strong>24</strong><span>Applications tracked</span></div><div><strong>37.5%</strong><span>Response rate</span></div><div><strong>2.4×</strong><span>Better focus</span></div></div>
     </section>

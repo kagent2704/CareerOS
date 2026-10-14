@@ -678,10 +678,7 @@ export default function Home() {
     <main className="app-shell">
       <aside className="sidebar">
         <a className="brand" href="#top" aria-label="CareerOS home">
-          <span className="brand-mark">C</span>
-          <span>
-            Career<span>OS</span>
-          </span>
+          <img className="brand-logo" src="/careeros-logo.png" alt="CareerOS" />
         </a>
         <nav className="main-nav" aria-label="Primary navigation">
           <p className="nav-label">Workspace</p>
@@ -747,7 +744,8 @@ export default function Home() {
       <section className="content" id="top">
         <header className="topbar">
           <div className="mobile-brand">
-            <span className="brand-mark">C</span> CareerOS
+            <img src="/careeros-emblem.png" alt="" aria-hidden="true" />
+            <span>CareerOS</span>
           </div>
           <label className="search">
             <span>⌕</span>

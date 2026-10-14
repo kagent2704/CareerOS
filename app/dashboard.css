@@ -40,6 +40,14 @@ textarea:focus-visible {
   font-size: 20px;
   padding: 0 8px 30px;
 }
+.brand-logo {
+  display: block;
+  width: 182px;
+  height: auto;
+  max-height: 58px;
+  object-fit: contain;
+  object-position: left center;
+}
 .brand > span:last-child span {
   color: #ef805e;
 }
@@ -206,6 +214,11 @@ textarea:focus-visible {
 }
 .mobile-brand {
   display: none;
+}
+.mobile-brand img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
 }
 .search {
   width: 360px;
